@@ -57,7 +57,7 @@ None of them can be regenerated from the repositories. The list is the one in [r
 - [ ] `./scripts/object-audio-install.sh` (builds only mpv-omniphony from source, several minutes). It refuses to install the command unless the new mpv loads the engine.
 - [ ] `./scripts/object-audio-install.sh status`, then read `~/.local/opt/mpv-object-audio/VERSIONS` and add it to the [pins block](#pins-recorded-on-the-rig).
 - [ ] Restore `~/.config/omniphony/` from the backup (engine config, shared by both players).
-- [ ] Check which bridge the engine uses: `mpv-object-audio --oa-check` (open item: the shared config points at an older bridge path).
+- [ ] Check which bridge the engine uses: `mpv-object-audio --oa-check`. The shared config points at `~/HomeTheatre/Omniphony/libharletty_bridge.so`, which on the old machine is byte-identical to the backup player's bridge (v0.7.3), not to the current player's v0.9.0.
 
 ## 5. mpv config folder and wrapper
 
@@ -113,25 +113,30 @@ The release pages show day and month only, with no year (the page footer says 20
 
 ### Omniphony (engine, `liborender`, Studio)
 
-**Best match: tag `v0.4.2`** of `mgth/Omniphony`, published 24 Jul, release page shows commit `6ffaf21`. Confidence: **fairly sure** for the release line, **not sure** for the exact build.
+**Best match: tag `v0.4.2`** of `mgth/Omniphony`, published 24 Jul, release page shows commit `6ffaf21`. Confidence: **fairly sure** that the library is the one shipped with Studio 0.4.2; not compared with the release asset, and no commit is recoverable.
 
 Evidence for:
 
 - The package on the rig is `omniphony-studio` **0.4.2**, and the Studio copy of `liborender.so.0` is dated 25 Jul, one day after the tag.
 - The matching player release `mpv-v0.4.2` (25 Jul 00:21, also commit `6ffaf21`) pins mpv `v0.41.0` plus the repository's `patches/` at commit `2553c6d66c0be57de7b8eeee140f86a82bcdbacc`, with liborender built at Omniphony `v0.4.2`. The wrapper path on the rig is `mpv-omniphony-v0.4.2-linux-x86_64`, and mpv is 0.41.0.
 - `installation.md` already carried an unverified note of commit `6ffaf21`. The release page now agrees with it.
-- The two `liborender.so.0` copies on the rig are the same size (10,284,384 bytes), one from 25 Jul and one from 2 Aug. That suggests the same source, but it is not proof (same size does not mean same bytes; `capture-pins.sh` records the hashes).
+- The two `liborender.so.0` copies on the rig have **the same sha256** (`19643d7dc481c09bada247ba2734dc5e48a8358a32619657606e7756b14667a2`, 10,284,384 bytes). One is inside the installed `omniphony-studio` 0.4.2 package (25 Jul 05:15). The other, in `~/.local/share/omniphony/lib/`, is dated 2 Aug, which is the date of the copy. So the library mpv loads is the package's file, not a separate source build (the first version of this section guessed otherwise).
 - The debugging log says bridge API 0.3.x pairs with Omniphony 0.5.x and earlier, and the `v0.6.0` notes say the API moved from 0.3 to 0.4. That fits a 0.4.2 engine with bridge API 0.3.0.
 
 Evidence against, or gaps:
 
 - **"liborender 0.3.0" does not appear on any release page.** The standalone `liborender-*` tags seen are `v0.4.1`, `v0.4.2` (tagged, no release) and `v0.4.3`. So the "0.3.0" string is probably an internal crate or ABI version inside the `v0.4.2` build, but that is a guess.
-- The 2 Aug copy that mpv loads is newer than the tag by 9 days. It was probably built from source at `v0.4.2` (`mpv-v0.4.3`, 9 Aug, also says "liborender built from source at Omniphony v0.4.2"), but the rig cannot show it.
 - `v0.4.3`'s release notes and the pages for the 0.3.x tags were not fully read (`/tags` is blocked to automated readers).
 
 For the current player: the installer records engine **v0.7.0** (ABI 0.12) and Omniphony commit `55af2c5` in `~/.local/opt/mpv-object-audio/VERSIONS`. That is the author's own record from 2026-10-25. It was not checked upstream here.
 
-**Command to confirm** (lists the assets and their sizes for the tag; then unpack the Linux one and look for a `liborender.so.0` of 10,284,384 bytes):
+**Commands to confirm.** First, that the installed library is exactly what the package shipped (read-only; no output means no file of the package was changed):
+
+```bash
+dpkg -V omniphony-studio
+```
+
+Then, to compare with the release itself (lists the assets and their sizes for the tag; unpack the Linux one and look for a `liborender.so.0` with the hash above). This was not done here, because the release API was not reachable from the session that wrote this:
 
 ```bash
 curl -s https://api.github.com/repos/mgth/Omniphony/releases/tags/v0.4.2 | python3 -c 'import json,sys; [print(a["size"], a["name"]) for a in json.load(sys.stdin)["assets"]]'
@@ -139,34 +144,31 @@ curl -s https://api.github.com/repos/mgth/Omniphony/releases/tags/v0.4.2 | pytho
 
 ### harletty-bridge
 
-**Best match: tag `v0.7.2`** of `harletty/harletty-bridge`, published 24 Jul, release page shows commit `f0ddefd`. Confidence: **low to medium**. The alternative is `v0.7.3` (29 Jul, commit `ff98334`).
+**Match: tag `v0.7.3`** of `harletty/harletty-bridge`, published 29 Jul, release page shows commit `ff98334`. Confidence: **firm for the release, not for the commit**.
 
-Evidence for `v0.7.2`:
+Evidence (checked 2026-11-01 after the author ran `capture-pins.sh`):
 
-- Its notes say: "Adds the ABI v2 labeled-channel/object contract used by Omniphony 0.4.2". It is the only bridge release that names an Omniphony version, and that version is the one matched above.
-- It ships `harletty-bridge-v0.7.2-linux-x86_64.zip`.
+- The installed `libharletty_bridge.so` is 3,636,184 bytes with sha256 `764869132c65829fd146504c8c8f14e4e5cbe959a91656ea9ac11934c949022e`.
+- The `libharletty_bridge.so` inside the release asset `harletty-bridge-v0.7.3-linux-x86_64.zip` has **the same size and the same sha256**. Both were compared byte for byte by hash.
+- The `v0.7.2` asset does not match: its library is 3,546,128 bytes (sha256 `6a852128...2786f33`). So `v0.7.2`, which the first version of this section preferred, is ruled out.
+- The library carries `bridge_api;0.3.0`, `abi_stable;0.11.3` and `rustc version 1.97.1 (8bab26f4f 2026-07-14)`, as expected for a 0.7.x bridge.
+- The file date on the rig, 29 Jul 17:53, is the day `v0.7.3` was published. The "2 Aug" date in the version table is the date of a later copy into `~/.local/share/omniphony/lib/`. All three copies on the rig (next to the mpv build, in `~/.local/share/omniphony/lib/`, and the one the engine config points at) have the same hash.
 
-Evidence against, or gaps:
+What this does not show: the exact commit. A release zip is built by upstream's CI, so the hash proves the author installed that release's file. It does not give a commit beyond what the release page shows (`ff98334`), and that id was read from the page, not from the file. The release asset list on the pages did not show sizes; the match above comes from downloading the zip, not from the page.
 
-- **The installed library was built 2 Aug.** Every listed release is earlier: `v0.7.3` (29 Jul), `v0.7.2.003` and `v0.7.2.002` (pre-releases, 28 and 27 Jul). So the file was either built from source on 2 Aug (at an unknown commit) or comes from a release that was later replaced. The copy next to the mpv build is therefore **not** a clean release download.
-- The pages never mention "bridge API 0.3.0", rustc 1.97.1 or the 3,636,184-byte size. Nothing ties a tag to the installed bytes.
-- `v0.7.3` is newer and its notes say all crates share one version line, but they name no Omniphony version. If the author built from `main` or the latest tag on 2 Aug, `v0.7.3` is as likely as `v0.7.2`.
-- Rule from the `v0.6.0` Omniphony notes: bridge API 0.4 needs harletty-bridge 0.8.0 or later. So the 0.3.0 library must come from the 0.7.x line, which agrees with both candidates.
-- The author's `todo-fill-in.md` shows a second copy (`~/HomeTheatre/Omniphony/libharletty_bridge.so`, 29 Jul) that fits the date of `v0.7.3` or the pre-releases. Which copy mpv loads is an open item.
-
-For the current player: bridges **v0.9.0** (bridge API 0.6.0), as recorded by the installer on 2026-10-25. Not checked upstream here.
-
-**Command to confirm** (downloads the two candidate zips into temporary folders and prints the size of every `.so` inside; a size of 3636184 means that tag is a byte-size match). The `v0.7.3` zip name is assumed from the `v0.7.2` pattern and was not seen on the pages:
+To repeat the check yourself (read-only; downloads the zip into a temporary folder, prints size and hash of the library):
 
 ```bash
-for t in v0.7.2 v0.7.3; do d=$(mktemp -d); curl -sSL -o "$d/b.zip" "https://github.com/harletty/harletty-bridge/releases/download/$t/harletty-bridge-$t-linux-x86_64.zip" && unzip -q "$d/b.zip" -d "$d" && echo "$t" && find "$d" -name '*.so' -exec stat -c '%s %n' {} \;; done
+d=$(mktemp -d) && curl -sSL -o "$d/b.zip" https://github.com/harletty/harletty-bridge/releases/download/v0.7.3/harletty-bridge-v0.7.3-linux-x86_64.zip && unzip -q "$d/b.zip" -d "$d" && sha256sum "$d"/libharletty_bridge.so
 ```
 
-If neither size matches, the library was built from source. Then the build date alone is not enough; the clean fix is to stop relying on the old file and use the current bridge from the installer.
+The result must be `764869132c65829fd146504c8c8f14e4e5cbe959a91656ea9ac11934c949022e`.
+
+For the backup player, install that zip's library, not a newer one. For the current player: bridges **v0.9.0**, recorded by the installer on 2026-10-25 (`VERSIONS` file below). Not compared with the release asset.
 
 ### mpv-omniphony
 
-**Pin: release `mpv-v0.4.2`** of `mgth/Omniphony` (mpv `v0.41.0` plus `patches/` at `2553c6d66c0be57de7b8eeee140f86a82bcdbacc`). Confidence: **fairly sure**; the directory name on the rig says `v0.4.2` and the log says 24 patches (the release page gives no patch count). The binary was built on the rig on 2 Aug 2026 16:19 and is marked `-dirty`, so it is not a byte-identical rebuild of anything upstream.
+**Pin: release `mpv-v0.4.2`** of `mgth/Omniphony` (mpv `v0.41.0` plus `patches/` at `2553c6d66c0be57de7b8eeee140f86a82bcdbacc`). Confidence: **fairly sure**; the directory name on the rig says `v0.4.2` and the log says 24 patches (the release page gives no patch count). The binary was built on the rig on 2 Aug 2026 16:19, reports `mpv v0.41.0-dirty`, so it is not a byte-identical rebuild of anything upstream.
 
 ## Pins recorded on the rig
 
@@ -176,14 +178,30 @@ Run once on the laptop, with no film playing:
 ~/sdht-workspace/sdht/scripts/capture-pins.sh
 ```
 
-It is read-only: it writes nothing, opens no listener and uses no network. Paste its output between the lines below. **Not yet run: this block is empty.**
+It is read-only: it writes nothing, opens no listener and uses no network. Paste its output between the lines below. Done on 2026-11-01.
 
 <!-- PINS-BEGIN -->
-_Not captured yet._
+Captured 2026-11-01 on the laptop with `scripts/capture-pins.sh`. Kernel 7.0.0-38-generic, Ubuntu 24.04.5 LTS.
+
+| Part | Version | Size (bytes) | File date | sha256 |
+|------|---------|--------------|-----------|--------|
+| PipeWire | 1.0.5 | | | |
+| WirePlumber | 0.4.17 | | | |
+| CamillaDSP `/usr/local/bin/camilladsp` | 4.1.3 (05e9cfc) | 8,219,840 | 2026-07-23 | `933502e484f4696a218a0a935d8fa240ba0045e2a4af929fc920d54195180081` |
+| `liborender.so.0` (mpv loads, `~/.local/share/omniphony/lib/`) | bridge_api 0.3.0, abi_stable 0.11.3, rustc 1.97.1 | 10,284,384 | 2026-08-02 | `19643d7dc481c09bada247ba2734dc5e48a8358a32619657606e7756b14667a2` |
+| `liborender.so.0` (in the `omniphony-studio` 0.4.2 package) | same | 10,284,384 | 2026-07-25 | same hash as above |
+| `libharletty_bridge.so` (three identical copies) | bridge_api 0.3.0 | 3,636,184 | 2026-07-29 (copy 2026-08-02) | `764869132c65829fd146504c8c8f14e4e5cbe959a91656ea9ac11934c949022e` |
+| mpv binary `.../mpv-omniphony/build/mpv-v0.41.0/_b/mpv` | v0.41.0-dirty | 11,739,304 | 2026-08-02 16:19 | `19b96a9f9b1c1e7bccb10bff9631e5aa6024dd00942eadee65bc6861ac1ba1a6` |
+| `~/.local/bin/mpv-atmos` (backup wrapper) | | 1,611 | 2026-10-26 | `e2237e1b86bab1e77fb03e55f360f6baca17761cabfbd4256a908bcba23dee6a` |
+
+`mpv-atmos` passes `--ad-orender-library=~/.local/share/omniphony/lib/liborender.so.0` and `--ad-orender-bridge-path=$OMNI/libharletty_bridge.so` (the copy next to the mpv build).
+
+Current player, from `~/.local/opt/mpv-object-audio/VERSIONS` (installed 2026-10-25): engine v0.7.0, bridge v0.9.0, mpv-omniphony commit `b84a7c7d3b14f24206d6c14bbab318937dd8a5bd`, mpv `v0.41.0-72-ge006f5ca0`.
 <!-- PINS-END -->
 
 Notes for reading the result:
 
 - A hash only identifies a file. It cannot say which commit built it.
-- The mpv binary and the bridge were built or copied on the rig. A rebuild will not give the same hash.
-- The bridge hash of the file next to the mpv build is the one that matters for the backup player.
+- The mpv binary was built on the rig. A rebuild will not give the same hash.
+- The CamillaDSP hash was not compared with the 4.1.3 release asset. The version string and build id `05e9cfc` are the evidence for now.
+- The three bridge copies and the two liborender copies are identical, so the "which bridge does the engine use" question in the todo list does not change what is loaded: they are the same file.
