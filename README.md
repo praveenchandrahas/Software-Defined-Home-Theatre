@@ -2,6 +2,9 @@
 
 # Software-defined home theatre (Linux, Atmos 5.1.2)
 
+[![ci](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre/actions/workflows/ci.yml/badge.svg)](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre/actions/workflows/ci.yml)
+*The badge means: the packages build, install on a clean Ubuntu 24.04, pass the simulated tests and remove cleanly. It does not mean the software works on a real rig.*
+
 **At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
 two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
 EQ, delays and trims, and the amplifiers only amplify.
@@ -13,6 +16,19 @@ exact versions are still to be filled in, see [Still to fill in](#still-to-fill-
 
 Room: about 10 x 10 ft, light-controlled and acoustically treated, with no space behind the seat for rear speakers, so **5.1.2 is the
 largest layout used here** (7.1.4 and 5.1.4 are deliberately not used).
+
+## Install (pre-release, experimental)
+
+Packaged for Ubuntu 24.04 as `.deb` files, with a one-script installer. Download, read, verify, run (do not pipe it into a shell):
+
+```bash
+TAG=v0.1.0; B=https://github.com/praveenchandrahas/Software-Defined-Home-Theatre/releases/download/$TAG
+curl -fLO $B/install.sh && curl -fLO $B/SHA256SUMS && sha256sum -c SHA256SUMS --ignore-missing
+less install.sh && bash install.sh --dry-run && bash install.sh
+```
+
+It checks every download against `SHA256SUMS`, uses `sudo` only for one `apt-get install`, installs CamillaDSP 4.1.3 after checking its pinned checksum, and only *checks* for the player stack (other people's software). Details, the other install paths, uninstall, and what is deliberately not packaged: [docs/packaging.md](docs/packaging.md). How releases are made: [docs/release-process.md](docs/release-process.md).
+The packaging has not been run on the author's rig; try it on a spare machine first. Packages are unsigned (checksums, and build-provenance attestations where available).
 
 ## The repositories
 
