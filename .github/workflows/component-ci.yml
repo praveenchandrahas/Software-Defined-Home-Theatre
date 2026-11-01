@@ -1,0 +1,93 @@
+# Reusable CI for one component repository (called by that repository's ci.yml). Everything it runs is a script in this repository's
+# packaging/kit or in the component's scripts/, so the same commands run on a developer machine. No secrets; read-only token.
+name: component-ci
+on:
+  workflow_call:
+    inputs:
+      kit_ref:
+        description: full commit SHA of Software-Defined-Home-Theatre that holds packaging/kit
+        required: true
+        type: string
+      apt_packages:
+        description: space separated Ubuntu packages the tests need
+        required: false
+        default: ""
+        type: string
+permissions:
+  contents: read
+jobs:
+  test:
+    name: test (${{ matrix.os }}${{ matrix.informational && ', informational' || '' }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    continue-on-error: ${{ matrix.informational }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            informational: false
+          - os: ubuntu-22.04
+            informational: true
+    steps:
+      - name: check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: check out the packaging kit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: praveenchandrahas/Software-Defined-Home-Theatre
+          ref: ${{ inputs.kit_ref }}
+          path: .sdht-kit
+          persist-credentials: false
+      - name: install the tools and the test dependencies
+        env:
+          APT_PACKAGES: ${{ inputs.apt_packages }}
+        run: |
+          sudo apt-get update -qq
+          # shellcheck disable=SC2086
+          sudo apt-get install -y -qq shellcheck $APT_PACKAGES
+      - name: get the dependency repositories (for tests that need a sibling)
+        run: bash .sdht-kit/packaging/kit/fetch-deps.sh --repo . --out "$RUNNER_TEMP/deps" --mode main
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: shellcheck every shell script, syntax-check every Python file
+        run: bash .sdht-kit/packaging/kit/ci-lint.sh --severity warning
+      - name: full test suite
+        env:
+          DEPS_DIR: ${{ runner.temp }}/deps/src
+        run: bash scripts/ci-test.sh
+
+  package:
+    name: package, lintian, clean install, smoke test, remove, purge
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: check out the packaging kit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: praveenchandrahas/Software-Defined-Home-Theatre
+          ref: ${{ inputs.kit_ref }}
+          path: .sdht-kit
+          persist-credentials: false
+      - name: install lintian
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lintian
+      - name: build the package (dry run, nothing is published)
+        run: bash .sdht-kit/packaging/kit/build-deb.sh --out "$RUNNER_TEMP/dist" | tee "$RUNNER_TEMP/build.txt"
+      - name: build the packages this one depends on, from their main branch
+        run: bash .sdht-kit/packaging/kit/fetch-deps.sh --repo . --out "$RUNNER_TEMP/dist" --mode main
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: lintian, errors and warnings fail the run
+        run: lintian --fail-on error,warning --pedantic "$RUNNER_TEMP"/dist/*.deb
+      - name: install in a clean ubuntu:24.04 container then smoke test from the installed paths then remove and purge and assert nothing is left
+        run: |
+          debs=()
+          for f in "$RUNNER_TEMP"/dist/*.deb; do debs+=("$(basename "$f")"); done
+          bash .sdht-kit/packaging/kit/ci-run-clean.sh --repo . --debs "$RUNNER_TEMP/dist" --smoke scripts/ci-smoke.sh -- "${debs[@]}"

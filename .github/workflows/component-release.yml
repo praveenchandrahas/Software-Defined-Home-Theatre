@@ -1,0 +1,169 @@
+# Reusable release pipeline for one component repository (called by that repository's release.yml on a v* tag, or by hand with dry_run).
+# check version -> build twice and compare -> attest -> publish a PRE-RELEASE -> verify the published files. It never marks anything "latest".
+name: component-release
+on:
+  workflow_call:
+    inputs:
+      kit_ref:
+        description: full commit SHA of Software-Defined-Home-Theatre that holds packaging/kit
+        required: true
+        type: string
+      dry_run:
+        description: do everything except create the release
+        required: false
+        default: false
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  check:
+    name: tag, VERSION and changelog agree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: praveenchandrahas/Software-Defined-Home-Theatre
+          ref: ${{ inputs.kit_ref }}
+          path: .sdht-kit
+          persist-credentials: false
+      - name: check the version
+        env:
+          DRY: ${{ inputs.dry_run }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" = tag ]; then tag="$REF_NAME"; else tag=""; fi
+          if [ "$DRY" != true ] && [ -z "$tag" ]; then echo "a real release must be started by a tag push" >&2; exit 1; fi
+          bash .sdht-kit/packaging/kit/check-version.sh ${tag:+--tag "$tag"}
+
+  build:
+    name: build twice, compare, checksums, source tarball
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: praveenchandrahas/Software-Defined-Home-Theatre
+          ref: ${{ inputs.kit_ref }}
+          path: .sdht-kit
+          persist-credentials: false
+      - name: build (fails if the two builds differ)
+        run: bash .sdht-kit/packaging/kit/release-build.sh --out "$RUNNER_TEMP/dist"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-dist
+          path: ${{ runner.temp }}/dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  attest:
+    name: build-provenance attestation (skipped on a dry run; allowed to fail)
+    needs: build
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    continue-on-error: true
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
+
+  publish:
+    name: create the PRE-RELEASE
+    needs: [build, attest]
+    if: ${{ !inputs.dry_run && !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: praveenchandrahas/Software-Defined-Home-Theatre
+          ref: ${{ inputs.kit_ref }}
+          path: .sdht-kit
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+      - name: create the release (always a pre-release, never "latest")
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          ATTEST: ${{ needs.attest.result == 'success' && 'ok' || 'skipped' }}
+        run: |
+          bash .sdht-kit/packaging/kit/release-notes.sh --attest "$ATTEST" > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --latest=false \
+            --title "$TAG (pre-release)" --notes-file "$RUNNER_TEMP/notes.md"
+
+  verify:
+    name: verify the released files, install in a clean ubuntu:24.04, smoke test
+    needs: [build, publish]
+    if: ${{ !cancelled() && needs.build.result == 'success' && (inputs.dry_run || needs.publish.result == 'success') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: praveenchandrahas/Software-Defined-Home-Theatre
+          ref: ${{ inputs.kit_ref }}
+          path: .sdht-kit
+          persist-credentials: false
+      - name: dry run - take the files from the build artifact
+        if: ${{ inputs.dry_run }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: released
+      - name: published run - download the release assets and verify them against SHA256SUMS
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: bash .sdht-kit/packaging/kit/verify-release.sh "$GITHUB_REPOSITORY" "$TAG" released
+      - name: check SHA256SUMS in the dry run too
+        if: ${{ inputs.dry_run }}
+        run: cd released && sha256sum -c SHA256SUMS
+      - name: attestation (only if it was created)
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for f in released/*_all.deb; do
+            if gh attestation verify "$f" --repo "$GITHUB_REPOSITORY"; then echo "attestation verified for $f"; else echo "::warning::no verifiable attestation for $f"; fi
+          done
+      - name: dependencies of this package, from their releases when they exist, else from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p deps
+          bash .sdht-kit/packaging/kit/fetch-deps.sh --repo . --out deps --mode release || bash .sdht-kit/packaging/kit/fetch-deps.sh --repo . --out deps --mode main
+          cp deps/*.deb released/ 2>/dev/null || true
+      - name: install in a clean ubuntu:24.04 container, smoke test, remove, purge
+        run: |
+          debs=()
+          for f in released/*_all.deb; do debs+=("$(basename "$f")"); done
+          bash .sdht-kit/packaging/kit/ci-run-clean.sh --repo . --debs released --smoke scripts/ci-smoke.sh -- "${debs[@]}"

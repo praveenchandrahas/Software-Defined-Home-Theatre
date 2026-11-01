@@ -1,0 +1,52 @@
+# CI of the main repository: its own tests, workflow lint, and the sdht meta package built and installed together with the five components.
+# Read-only token, no secrets.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    name: tests, shellcheck, workflow lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - name: shellcheck every shell script, syntax-check every Python file
+        run: bash packaging/kit/ci-lint.sh --severity warning
+      - name: lint the workflows
+        run: bash packaging/kit/actionlint.sh
+      - name: tests
+        run: bash scripts/ci-test.sh
+
+  package:
+    name: sdht meta package, lintian, clean install with the components, smoke test, remove, purge
+    needs: checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq lintian
+      - name: component packages (from their releases if they exist, else built from their main branch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash packaging/kit/fetch-components.sh --out "$RUNNER_TEMP/dist"
+      - name: build the meta package from versions.lock
+        run: bash packaging/kit/build-deb.sh --out "$RUNNER_TEMP/dist"
+      - name: lintian (errors and warnings fail the run)
+        run: lintian --fail-on error,warning --pedantic "$RUNNER_TEMP"/dist/*.deb
+      - name: install everything in a clean ubuntu:24.04 container, smoke test, remove, purge
+        run: |
+          debs=()
+          for f in "$RUNNER_TEMP"/dist/*.deb; do debs+=("$(basename "$f")"); done
+          bash packaging/kit/ci-run-clean.sh --repo . --debs "$RUNNER_TEMP/dist" --smoke scripts/ci-smoke.sh -- "${debs[@]}"

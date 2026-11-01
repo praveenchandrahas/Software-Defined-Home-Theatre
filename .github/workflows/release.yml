@@ -1,0 +1,151 @@
+# Release orchestration of the main repository, on a v* tag: check that every component release named in versions.lock exists and that its .deb
+# matches the pinned checksum, build the sdht meta package from versions.lock (twice, compared), publish install.sh, versions.lock, the packages
+# and SHA256SUMS as a PRE-RELEASE, then verify what was published. It never promotes a release and never marks one "latest".
+# workflow_dispatch with dry_run builds and verifies everything and publishes nothing.
+name: release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: build and verify everything, publish nothing
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  check:
+    name: tag, VERSION, changelog, versions.lock and install.sh agree
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: check the version everywhere
+        env:
+          DRY: ${{ inputs.dry_run }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" = tag ]; then tag="$REF_NAME"; else tag=""; fi
+          if [ "$DRY" != true ] && [ -z "$tag" ]; then echo "a real release must be started by a tag push" >&2; exit 1; fi
+          bash packaging/kit/check-version.sh ${tag:+--tag "$tag"}
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - run: bash packaging/kit/ci-lint.sh --severity warning
+      - run: bash packaging/kit/actionlint.sh
+      - run: bash scripts/ci-test.sh
+
+  build:
+    name: check the component releases, build the meta package twice, assemble the files
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: orchestrate (fails if a component release is missing or its .deb differs from versions.lock)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash packaging/kit/orchestrate.sh --out "$RUNNER_TEMP/dist"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-dist
+          path: ${{ runner.temp }}/dist/
+          if-no-files-found: error
+          retention-days: 14
+
+  attest:
+    name: build-provenance attestation (skipped on a dry run; allowed to fail)
+    needs: build
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    continue-on-error: true
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
+
+  publish:
+    name: create the PRE-RELEASE
+    needs: [build, attest]
+    if: ${{ !inputs.dry_run && !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+      - name: create the release (always a pre-release, never "latest")
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          ATTEST: ${{ needs.attest.result == 'success' && 'ok' || 'skipped' }}
+        run: |
+          printf '%s\n' "- Component versions and checksums: versions.lock. The component .debs are copies of the files from their own pre-releases, checked against the checksums pinned there." > "$RUNNER_TEMP/extra.md"
+          bash packaging/kit/release-notes.sh --attest "$ATTEST" --extra "$RUNNER_TEMP/extra.md" > "$RUNNER_TEMP/notes.md"
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease --latest=false \
+            --title "$TAG (pre-release)" --notes-file "$RUNNER_TEMP/notes.md"
+
+  verify:
+    name: verify the released files, install.sh --dry-run, clean install of everything
+    needs: [build, publish]
+    if: ${{ !cancelled() && needs.build.result == 'success' && (inputs.dry_run || needs.publish.result == 'success') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: dry run - take the files from the build artifact
+        if: ${{ inputs.dry_run }}
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: released
+      - name: published run - download the release assets and verify them against SHA256SUMS
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: bash packaging/kit/verify-release.sh "$GITHUB_REPOSITORY" "$TAG" released
+      - name: check SHA256SUMS in the dry run too
+        if: ${{ inputs.dry_run }}
+        run: cd released && sha256sum -c SHA256SUMS
+      - name: install.sh --dry-run against the released files
+        env:
+          TAG: ${{ github.ref_name }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/rel/v$(tr -d ' \n' < VERSION)"
+          cp released/SHA256SUMS released/versions.lock "$RUNNER_TEMP/rel/v$(tr -d ' \n' < VERSION)/"
+          SDHT_BASE_URL="file://$RUNNER_TEMP/rel" bash released/install.sh --dry-run --no-camilladsp
+          if [ "$DRY" != true ]; then bash released/install.sh --dry-run --release "$TAG"; fi
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq lintian
+      - name: lintian on the released packages
+        run: lintian --fail-on error,warning --pedantic released/*.deb
+      - name: install everything in a clean ubuntu:24.04 container, smoke test, remove, purge
+        run: |
+          debs=()
+          for f in released/*_all.deb; do debs+=("$(basename "$f")"); done
+          bash packaging/kit/ci-run-clean.sh --repo . --debs released --smoke scripts/ci-smoke.sh -- "${debs[@]}"
