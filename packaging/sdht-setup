@@ -1,0 +1,38 @@
+#!/bin/bash
+# sdht-setup: runs the per-user setup command of each packaged component, in order, for ONE user.
+#
+#   sdht-setup [--dry-run] install      theater-setup, roomtone-setup, seekthumbs-setup, mpv-shelf-setup (each with the same options)
+#   sdht-setup [--dry-run] uninstall    the same, undone, in reverse order
+#   sdht-setup check                    report only, including the parts that are not packaged (CamillaDSP, the player stack)
+#
+# --dry-run is passed to every component and changes nothing. This command never downloads anything and never touches CamillaDSP or
+# PipeWire configuration. The player stack (mpv-object-audio-install) is NOT run here: it downloads other people's software; run it yourself.
+set -u
+ARGS=(); ACTION=
+for a in "$@"; do
+  case "$a" in
+    install|uninstall|check) ACTION=$a ;;
+    --dry-run|-n) ARGS+=(--dry-run) ;;
+    -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown argument: $a (try --help)" >&2; exit 2 ;;
+  esac
+done
+[ -n "$ACTION" ] || { echo "usage: sdht-setup [--dry-run] install|uninstall|check" >&2; exit 2; }
+order=(theater-setup roomtone-setup seekthumbs-setup mpv-shelf-setup)
+[ "$ACTION" = uninstall ] && order=(mpv-shelf-setup seekthumbs-setup roomtone-setup theater-setup)
+rc=0
+for c in "${order[@]}"; do
+  echo; echo "=== $c $ACTION ${ARGS[*]:-}"
+  if ! command -v "$c" >/dev/null 2>&1; then echo "$c is not installed; skipped"; continue; fi
+  "$c" "${ARGS[@]}" "$ACTION" || { echo "$c failed (exit $?)"; rc=1; }
+done
+if [ "$ACTION" = check ]; then
+  echo; echo "=== not packaged (reported only)"
+  if command -v camilladsp >/dev/null 2>&1; then echo "camilladsp: $(command -v camilladsp) $(camilladsp --version 2>/dev/null | head -1)"
+  else echo "camilladsp: not found (the sdht install.sh fetches the pinned release)"; fi
+  OA=${OA_HOME:-$HOME/.local/opt/mpv-object-audio}
+  for f in "$OA/bin/mpv" "$OA/lib/liborender.so.0"; do [ -e "$f" ] && echo "present: $f" || echo "missing: $f"; done
+  ls "$OA"/lib/libharletty_*_bridge.so >/dev/null 2>&1 && echo "present: harletty bridges in $OA/lib" || echo "missing: harletty bridges in $OA/lib"
+  echo "These are other people's software: see /usr/share/doc/sdht/rebuild-checklist.md and mpv-object-audio-install --dry-run."
+fi
+exit $rc

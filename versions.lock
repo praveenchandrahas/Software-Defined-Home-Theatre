@@ -1,0 +1,11 @@
+# versions.lock: the component versions of one sdht release, and the sha256 of each .deb as published by the component's own release.
+# Lines are TAB separated.  deb<TAB>name<TAB>version<TAB>file<TAB>sha256   external<TAB>name<TAB>version<TAB>url<TAB>sha256<TAB>member
+# PENDING = the component is not released yet (a release refuses to run while any is PENDING).
+# The meta package sdht_<sdht_version>_all.deb is built FROM this file, so it is not listed here; the release SHA256SUMS covers it.
+sdht_version=0.1.0
+deb	linux-theater-dsp	0.1.0	linux-theater-dsp_0.1.0_all.deb	PENDING	linux-theater-dsp
+deb	roomtone	0.1.0	roomtone_0.1.0_all.deb	PENDING	Roomtone
+deb	seekthumbs	0.1.0	seekthumbs_0.1.0_all.deb	PENDING	seekthumbs
+deb	mpv-shelf	0.1.0	mpv-shelf_0.1.0_all.deb	PENDING	mpv-shelf
+deb	mpv-object-audio	0.1.0	mpv-object-audio_0.1.0_all.deb	PENDING	mpv-object-audio
+external	camilladsp	4.1.3	https://github.com/HEnquist/camilladsp/releases/download/v4.1.3/camilladsp-linux-pipewire-amd64.tar.gz	04388dfbf0999732c51a972fa7c3dc7fa17437333124af7918022445c459851a	camilladsp
