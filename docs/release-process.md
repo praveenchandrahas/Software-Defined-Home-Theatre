@@ -83,3 +83,17 @@ Do it per repository, and only after you have run the packages yourself.
 ## What the author has to do
 
 Things this pipeline cannot or must not do: create a signing key and publish it (packages are unsigned), a Flathub, PPA or PyPI account (none is used), try the `.deb` files on a spare machine before the rig, and promote a pre-release by hand (above). Turning on branch protection, GitHub Pages, or any other repository setting was deliberately left alone.
+
+## State at the first attempt (2026-11-01) and what the author has to do
+
+- CI is green on Ubuntu 24.04 in every component repository (tests, shellcheck, build, lintian, install in a clean container, smoke test from the installed paths, remove, purge). The informational Ubuntu 22.04 jobs fail in some repositories (for example seekthumbs, linux-theater-dsp, Roomtone); the cause was not chased, because 22.04 is not a supported target. One known difference: its older ffmpeg and python3-lupa behave differently from 24.04's in a few tests.
+- The release workflow was dry-run (`workflow_dispatch`, `dry_run=true`) in the component repositories and passed: tag/VERSION/changelog check, build twice with identical SHA256, checksums, source tarball, verification in a clean Ubuntu 24.04 container. The attestation and the pre-release creation are skipped on a dry run, so **whether attestations work on a real release is not yet known.**
+- **No v0.1.0 tag has been pushed.** The session that prepared this could push branches but its `git push` of a tag was refused by the git proxy (HTTP 403), and creating the tag through the API instead was not allowed. So the author pushes the tags, components first:
+
+  ```sh
+  for r in linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf Roomtone; do
+    (cd ~/src/$r && git pull --ff-only && git tag -a v0.1.0 -m "v0.1.0 (pre-release)" && git push origin v0.1.0)
+  done
+  ```
+
+  Then, in the main repository, run `packaging/kit/update-lock.sh` with the five tags (it replaces the `PENDING` checksums in `versions.lock`), commit, wait for CI, and push `v0.1.0` there as well. Every release is created as a pre-release and never as "latest"; promoting one to stable is the author's manual decision.
