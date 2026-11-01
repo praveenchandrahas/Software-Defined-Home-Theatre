@@ -24,7 +24,7 @@ DEPENDS=$(awk -F'\t' '$1=="deb" && $2!="sdht" { printf "%s%s (= %s)", sep, $2, $
 
 stage() {
   inst 755 packaging/sdht-setup /usr/bin/sdht-setup
-  inst 644 versions.lock /usr/share/doc/sdht/versions.lock
+  inst 644 versions.lock /usr/share/sdht/versions.lock
   inst 644 docs/installation.md /usr/share/doc/sdht/installation.md
   inst 644 docs/rebuild-checklist.md /usr/share/doc/sdht/rebuild-checklist.md
   inst 644 docs/packaging.md /usr/share/doc/sdht/packaging.md

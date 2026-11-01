@@ -9,7 +9,7 @@ fail() { echo "SMOKE FAIL: $*" >&2; exit 1; }
 for c in sdht-setup theater-setup roomtone-setup seekthumbs-setup mpv-shelf-setup mpv-object-audio mpv-object-audio-install eq autocal theater-ctld seekthumbs shelf-index; do
   [ "$(command -v "$c")" = "/usr/bin/$c" ] || fail "$c resolves to '$(command -v "$c")'"
 done
-LOCK=/usr/share/doc/sdht/versions.lock
+LOCK=/usr/share/sdht/versions.lock
 [ -f "$LOCK" ] || fail "versions.lock not installed"
 while IFS=$'\t' read -r kind name ver _; do
   [ "$kind" = deb ] || continue
