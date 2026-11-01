@@ -1,3 +1,4 @@
+# shellcheck shell=bash disable=SC2034  # sourced by build-deb.sh, which uses these variables
 # Package definition for kit/build-deb.sh (sourced). The meta package: it only depends on the exact component versions in versions.lock.
 PKG=sdht
 CHANGELOG_FILE=RELEASES.md
