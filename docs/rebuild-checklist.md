@@ -113,7 +113,7 @@ The release pages show day and month only, with no year (the page footer says 20
 
 ### Omniphony (engine, `liborender`, Studio)
 
-**Best match: tag `v0.4.2`** of `mgth/Omniphony`, published 24 Jul, release page shows commit `6ffaf21`. Confidence: **fairly sure** that the library is the one shipped with Studio 0.4.2; not compared with the release asset, and no commit is recoverable.
+**Best match: tag `v0.4.2`** of `mgth/Omniphony`, published 24 Jul, release page shows commit `6ffaf21`. Confidence: **sure** that the library is the one shipped in the `omniphony-studio` 0.4.2 package (`dpkg -V omniphony-studio` printed nothing on 2026-11-01, so no packaged file was changed, and the `~/.local` copy has the same hash). Not compared with the GitHub release asset, and no commit is recoverable.
 
 Evidence for:
 
@@ -130,7 +130,7 @@ Evidence against, or gaps:
 
 For the current player: the installer records engine **v0.7.0** (ABI 0.12) and Omniphony commit `55af2c5` in `~/.local/opt/mpv-object-audio/VERSIONS`. That is the author's own record from 2026-10-25. It was not checked upstream here.
 
-**Commands to confirm.** First, that the installed library is exactly what the package shipped (read-only; no output means no file of the package was changed):
+**Commands to confirm.** First, that the installed library is exactly what the package shipped (read-only; no output means no file of the package was changed; **done 2026-11-01, no output**):
 
 ```bash
 dpkg -V omniphony-studio
