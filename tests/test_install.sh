@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Tests install.sh against a fake release folder (file:// base) and a stand-in apt-get: dry run fetches only the two metadata files, a bad
-# checksum stops everything before apt runs, a good release reaches apt with exactly the listed packages. No network, no real apt, no sudo.
+# checksum stops everything before apt runs, a good release reaches apt with exactly the listed packages. No network, no real apt, no real sudo.
 set -u
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
 REL=$T/rel/v0.1.0; STUB=$T/stub; mkdir -p "$REL" "$STUB" "$T/home"
 printf '#!/bin/sh\necho "$@" >> %s/apt.log\n' "$T" > "$STUB/apt-get"; chmod +x "$STUB/apt-get"
+printf '#!/bin/sh\nexec "$@"\n' > "$STUB/sudo"; chmod +x "$STUB/sudo"   # the CI runner is not root: keep sudo from reaching the real apt
 for n in linux-theater-dsp roomtone; do echo "fake $n" > "$REL/${n}_0.1.0_all.deb"; done
 echo "fake sdht" > "$REL/sdht_0.1.0_all.deb"
 { printf '# test lock\nsdht_version=0.1.0\n'
