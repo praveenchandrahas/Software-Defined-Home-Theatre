@@ -75,7 +75,7 @@ while IFS= read -r p; do
   [ -e "$p" ] || [ -L "$p" ] && fail "after remove, still present: $p"
 done < /tmp/ownfiles
 echo "== purge"
-apt-get purge -y -qq "${names[@]}" >/dev/null
+dpkg --purge "${names[@]}" >/dev/null   # not apt: a package without conffiles is already gone after remove, and apt then says "Unable to locate"
 for n in "${names[@]}"; do if dpkg -l "$n" 2>/dev/null | grep -q '^[ir][icn]'; then fail "$n still known to dpkg"; fi; done
 while IFS= read -r p; do [ -e "$p" ] && fail "after purge, still present: $p"; done < /tmp/roots
 snap > /tmp/snap2
