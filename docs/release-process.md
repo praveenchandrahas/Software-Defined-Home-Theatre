@@ -84,16 +84,10 @@ Do it per repository, and only after you have run the packages yourself.
 
 Things this pipeline cannot or must not do: create a signing key and publish it (packages are unsigned), a Flathub, PPA or PyPI account (none is used), try the `.deb` files on a spare machine before the rig, and promote a pre-release by hand (above). Turning on branch protection, GitHub Pages, or any other repository setting was deliberately left alone.
 
-## State at the first attempt (2026-11-01) and what the author has to do
+## State of the first release (2026-11-02)
 
-- CI is green on Ubuntu 24.04 in every component repository (tests, shellcheck, build, lintian, install in a clean container, smoke test from the installed paths, remove, purge). The informational Ubuntu 22.04 jobs fail in some repositories (for example seekthumbs, linux-theater-dsp, Roomtone); the cause was not chased, because 22.04 is not a supported target. One known difference: its older ffmpeg and python3-lupa behave differently from 24.04's in a few tests.
-- The release workflow was dry-run (`workflow_dispatch`, `dry_run=true`) in the component repositories and passed: tag/VERSION/changelog check, build twice with identical SHA256, checksums, source tarball, verification in a clean Ubuntu 24.04 container. The attestation and the pre-release creation are skipped on a dry run, so **whether attestations work on a real release is not yet known.**
-- **No v0.1.0 tag has been pushed.** The session that prepared this could push branches but its `git push` of a tag was refused by the git proxy (HTTP 403), and creating the tag through the API instead was not allowed. So the author pushes the tags, components first:
-
-  ```sh
-  for r in linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf Roomtone; do
-    (cd ~/src/$r && git pull --ff-only && git tag -a v0.1.0 -m "v0.1.0 (pre-release)" && git push origin v0.1.0)
-  done
-  ```
-
-  Then, in the main repository, run `packaging/kit/update-lock.sh` with the five tags (it replaces the `PENDING` checksums in `versions.lock`), commit, wait for CI, and push `v0.1.0` there as well. Every release is created as a pre-release and never as "latest"; promoting one to stable is the author's manual decision.
+- The five component repositories each have a **v0.1.0 pre-release** (not "latest"). The author pushed the tags; the session that prepared the packaging could push branches but not tags (HTTP 403 from its git proxy, also for the API). Each tag run passed: tag/VERSION/changelog check, tests, build twice with identical SHA256, build-provenance attestation, release creation, and a final job that downloads the published files and checks them in a clean Ubuntu 24.04.
+- `versions.lock` pins the five released .deb files by SHA256, each checked against its release's own SHA256SUMS.
+- Ubuntu 22.04 is an informational CI job only; it fails in some repositories (older ffmpeg and python3-lupa than the tests assume). The cause was not chased because 22.04 is not a supported target.
+- The main repository's v0.1.0 is pushed by the author the same way as the components: `git tag v0.1.0 && git push origin v0.1.0`.
+- Lessons from the first CI runs, so they are not repeated: Docker's Ubuntu image leaves out `/usr/share/doc`, so nothing a test reads may be installed there; `apt purge` fails for a package that `remove` already erased (the kit uses `dpkg --purge`); the CI runner is not root, so tests that call `sudo` need a stub.
