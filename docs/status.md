@@ -213,6 +213,8 @@ The hover shows in the data as mpv CPU and the `lua/uosc` thread rising at 17 s 
 
 **Next run, the decisive one:** the same 60 s with the Vantec connected, CamillaDSP carrying audio, after `git pull` in roomtone and seekthumbs (the `install-viewer` already done is current). Pass: no buffer-empty lines inside the hover, no dropped frames, `worker` absent. If it still stutters there with no ffmpeg alive, the cause is in the CamillaDSP/Vantec path under mpv CPU load, not in the viewer, and the thread table will say which thread is late. Optional cheap cross-check without the Vantec: `bulk=no` in `seekthumbs.conf` (next to the installed `scripts` folder), the same run; if it then drops frames and `worker` returns, the fix is confirmed independently of the audio route.
 
+**Closed, 2026-11-04 (owner's account, not a fresh instrumented run):** the owner reports no hover stutter at all, on multiple files, with the full rig (Vantec, CamillaDSP) in the path. The decisive run above with the thread table was never re-run to confirm which thread had been late, so the mechanism is not pinned down beyond the `bulk` viewer change already described, but the symptom is gone on real use. Treated as resolved; the measurement chase above stays as the record of how it got there.
+
 ## Sub arrival (measured 2026-10-24 from sweep1/sweep2)
 
 The sub (LFE) arrives about 6 to 7 ms after the front left at the seat, with a group delay near 15 ms at 50 to 100 Hz. The LFE delay is still 0.20 ms (kept in step with FL), so this has not been compensated.
