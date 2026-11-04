@@ -136,10 +136,11 @@ For the current player: the installer records engine **v0.7.0** (ABI 0.12) and O
 dpkg -V omniphony-studio
 ```
 
-Then, to compare with the release itself (lists the assets and their sizes for the tag; unpack the Linux one and look for a `liborender.so.0` with the hash above). This was not done here, because the release API was not reachable from the session that wrote this:
+**Done 2026-11-04: there is no release to compare with.** Tag `v0.4.2` has no GitHub release (confirmed again by probing `releases/download/v0.4.2/...` for every plausible asset name: all 404, and the tag has no release page). The only asset that ships a `liborender.so.0` at all is the separate `mpv-v0.4.2` player release, and its copy does not match the rig's (see [Pins recorded on the rig](#pins-recorded-on-the-rig) below for both hashes). The command below is kept for the record of what was tried:
 
 ```bash
 curl -s https://api.github.com/repos/mgth/Omniphony/releases/tags/v0.4.2 | python3 -c 'import json,sys; [print(a["size"], a["name"]) for a in json.load(sys.stdin)["assets"]]'
+# (returns an empty asset list: there is no release for this tag, only a git tag)
 ```
 
 ### harletty-bridge
@@ -203,5 +204,16 @@ Notes for reading the result:
 
 - A hash only identifies a file. It cannot say which commit built it.
 - The mpv binary was built on the rig. A rebuild will not give the same hash.
-- The CamillaDSP hash was not compared with the 4.1.3 release asset. The version string and build id `05e9cfc` are the evidence for now.
 - The three bridge copies and the two liborender copies are identical, so the "which bridge does the engine use" question in the todo list does not change what is loaded: they are the same file.
+
+**CamillaDSP and liborender.so.0 compared with their release assets (2026-11-04), closing the two gaps above. Neither matches byte-for-byte; this does not mean either is suspect, see below.**
+
+- **CamillaDSP:** the `v4.1.3` Linux amd64 asset (`camilladsp-linux-amd64.tar.gz`, the only Linux amd64 asset on that tag; no `-musl`/`-generic`/`-legacy` variant exists for it) reports `CamillaDSP 4.1.3 (05e9cfc)` — the exact same version and build id the rig's binary reports — but is **not** the same file: 7,993,792 bytes, sha256 `e69090287d9af87eeb5720d59cf8ebf8cab1ed3adbe24de1dd60b66a47f5385b`, against the rig's 8,219,840 bytes and sha256 `933502e484f4696a218a0a935d8fa240ba0045e2a4af929fc920d54195180081`. The build id is baked into the binary from the source commit at compile time, so an identical build id with different bytes means: same source commit, different compiler/toolchain/linking producing a different binary (Rust builds are not reproducible by default) — not necessarily a different commit, and no sign of tampering. Confidence in "the rig runs the commit tagged v4.1.3, build 05e9cfc" stays **sure** (that's what the running binary's own `--version` says); confidence in "the rig's binary is the GitHub-built one" drops to **no** — it demonstrably is not, so it was installed some other way (built locally, or packaged by a distro/AUR-style pipeline rather than downloading the release asset directly).
+  ```bash
+  d=$(mktemp -d) && curl -sSL -o "$d/c.tar.gz" https://github.com/HEnquist/camilladsp/releases/download/v4.1.3/camilladsp-linux-amd64.tar.gz && tar xzf "$d/c.tar.gz" -C "$d" && sha256sum "$d/camilladsp"
+  ```
+- **liborender.so.0:** confirmed again, as the 2026-10-31 research guessed: the standalone engine tag `v0.4.2` has **no GitHub release, so no asset to compare against** — not a tooling failure, there is nothing there. The `mpv-v0.4.2` release (a different tag, the player bundle) does ship its own copy of `liborender.so.0` inside `mpv-omniphony-v0.4.2-linux-x86_64.zip`, dated 25 Jul 00:12 — but it is also **not** the rig's file: 10,285,064 bytes, sha256 `ea5efd3fb2ac5ec24fee6300989eb16b66a26a968ebecb9075286e43fe49fc89`, against the rig's 10,284,384 bytes and sha256 `19643d7dc481c09bada247ba2734dc5e48a8358a32619657606e7756b14667a2` (close in size, not the same file). Likely explanation: the rig's copy came from the `omniphony-studio` 0.4.2 package (an AUR-style build from source), not from downloading either GitHub release's bundled binary — a separate build of the same tag, same as CamillaDSP above. There is now no asset left to try for this one; the version match (same tag, same bridge_api/abi_stable/rustc strings) is the evidence, and it is as far as this can be taken without the rig's own build log.
+  ```bash
+  d=$(mktemp -d) && curl -sSL -o "$d/b.zip" https://github.com/mgth/Omniphony/releases/download/mpv-v0.4.2/mpv-omniphony-v0.4.2-linux-x86_64.zip && unzip -q "$d/b.zip" -d "$d" liborender.so.0 && sha256sum "$d/liborender.so.0"
+  ```
+- **Reading both together:** harletty-bridge matched its release asset exactly; neither of these two does, despite both reporting the expected version strings. That's a real difference in provenance (install method), not a reason to distrust the version numbers already recorded — the running programs' own version/build-id output is still the best evidence of which commit is running, and nothing here contradicts it.
