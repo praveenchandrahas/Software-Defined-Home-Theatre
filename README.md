@@ -5,6 +5,8 @@
 [![ci](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre/actions/workflows/ci.yml/badge.svg)](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre/actions/workflows/ci.yml)
 *The badge means: the packages build, install on a clean Ubuntu 24.04, pass the simulated tests and remove cleanly. It does not mean the software works on a real rig.*
 
+**Full docs site (all six repositories, cross-linked): https://praveenchandrahas.github.io/Software-Defined-Home-Theatre/** — this README stays as the GitHub-facing copy; the content is the same, reused rather than duplicated by hand.
+
 **At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
 two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
 EQ, delays and trims, and the amplifiers only amplify.

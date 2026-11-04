@@ -1,0 +1,43 @@
+site_name: Software-defined home theatre
+site_description: A Linux laptop decodes Dolby Atmos live and renders it to a 5.1.2 room; no AV receiver, CamillaDSP does the EQ, delays and trims.
+repo_url: https://github.com/praveenchandrahas/Software-Defined-Home-Theatre
+repo_name: praveenchandrahas/Software-Defined-Home-Theatre
+docs_dir: docs
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      toggle: {icon: material/brightness-7, name: Switch to dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      toggle: {icon: material/brightness-4, name: Switch to light mode}
+  features: [navigation.instant, navigation.sections, navigation.top, toc.integrate, content.code.copy]
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - The repositories: repos.md
+  - Install:
+      - Quick start / packaged install: installation.md
+      - Packaging details: packaging.md
+  - How it's built:
+      - Architecture: architecture.md
+      - Technical write-up: technical-writeup.md
+  - Tuning and calibration:
+      - Tuning log: tuning-log.md
+      - Speaker alignment: alignment.md
+  - Status and what's verified: status.md
+  - Troubleshooting: troubleshooting.md
+  - Roadmap: roadmap.md
+  - Design notes and comparisons:
+      - VBAP vs Cavernize (why a live object renderer, not offline rendering): vbap-vs-cavernize.md
+      - This stack vs. the frontier (what's novel, what isn't): stack-vs-frontier.md
+      - Atmos without an AV receiver, alternatives considered: atmos-without-avr-alternatives.md
