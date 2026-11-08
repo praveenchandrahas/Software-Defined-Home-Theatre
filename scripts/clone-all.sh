@@ -9,7 +9,7 @@ TARGET="${1:-$(dirname "$HERE")}"
 mkdir -p "$TARGET"
 echo "== this repository ($(basename "$HERE")): updating"; git -C "$HERE" pull --ff-only || echo "   (could not fast-forward; left as is)"
 OLD=0; [ -d "$TARGET/theater-measurement/.git" ] && [ ! -d "$TARGET/roomtone/.git" ] && OLD=1   # Roomtone was theater-measurement; GitHub redirects
-for r in linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf roomtone; do
+for r in linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf roomtone spatial-lab; do
   [ "$r" = roomtone ] && [ "$OLD" = 1 ] && r=theater-measurement
   if [ -d "$TARGET/$r/.git" ]; then
     echo "== $r: updating"; git -C "$TARGET/$r" pull --ff-only || echo "   (could not fast-forward; left as is)"

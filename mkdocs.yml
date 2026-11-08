@@ -31,6 +31,7 @@ nav:
   - How it's built:
       - Architecture: architecture.md
       - Technical write-up: technical-writeup.md
+      - Spatial-Lab (3D listening test bench): spatial-lab.md
   - Tuning and calibration:
       - Tuning log: tuning-log.md
       - Speaker alignment: alignment.md

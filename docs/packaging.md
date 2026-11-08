@@ -12,6 +12,8 @@ What the packaging adds is a way to install the project parts without copying sc
 | `roomtone` | [Roomtone](https://github.com/praveenchandrahas/Roomtone) | `autocal`, `theater-ctld` (status page, 127.0.0.1 only), the mpv status overlay, the measurement scripts | `roomtone-setup` |
 | `seekthumbs` | [seekthumbs](https://github.com/praveenchandrahas/seekthumbs) | `seekthumbs`, its local web page (127.0.0.1 only), the mpv viewer script, a user unit for the watcher | `seekthumbs-setup` |
 | `mpv-shelf` | [mpv-shelf](https://github.com/praveenchandrahas/mpv-shelf) | `shelf-index`, `shelf.lua` | `mpv-shelf-setup` |
+
+**Not packaged: Spatial-Lab.** It runs from its repository (`python3 -m spatial_lab serve`, or `pip install -e .`) and is not in `versions.lock` or the `sdht` meta package. A `.deb` for it would follow the same pattern as the others; it has not been made.
 | `mpv-object-audio` | [mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio) | the wrapper and the installer script **only** | `mpv-object-audio-install` |
 | `sdht` | this repository | meta package: depends on the exact versions above, `sdht-setup`, the documentation | `sdht-setup` |
 

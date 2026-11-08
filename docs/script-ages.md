@@ -4,7 +4,7 @@ Question from the README: which scripts, if any, predate the working sessions of
 
 ## Answer
 
-**No code file in any of the six repositories can be shown to be older than 2026-10-20.** What can be said:
+**No code file in any of the seven repositories can be shown to be older than 2026-10-20.** What can be said:
 
 - **Three early scripts were already in the working folder when the 2026-10-20 sessions started** (`set-eq.py` and `route-mpv.sh` as short first versions, `tone-test.sh` as a 1,020-byte script that is byte-identical to the committed one). The committed `set-eq.py` and `route-mpv.sh` are large rewrites of those first versions; whether any lines survive was not measured. The loop inside `tone-test.sh` first appears typed by hand in the chat of 2026-10-20 at about 10:58 IST, so it was written that morning at the earliest. The first `set-eq.py` was built from the REW export of 2026-10-19.
 - **The `mpv-atmos` wrapper's option block is older than October**, by the repository's own account: its header says "as built in Sep 2026", and the repository copy is documented as newer than the copy installed on the laptop. Who wrote the original option block cannot be settled from the repositories. What is dated in git: `eq ensure` (2026-10-23) and `eq prepare` plus the IPC socket (2026-10-24) were added by Claude. `mpv-atmos-overlay-off.lua` is probably older as well, without a date.

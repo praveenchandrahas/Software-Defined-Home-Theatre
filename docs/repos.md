@@ -1,6 +1,6 @@
 # The repositories
 
-It is one project in six repositories (split from a single repository on 2026-10-25, history preserved in each; mpv-shelf was added on 2026-10-26).
+It is one project in seven repositories (split from a single repository on 2026-10-25, history preserved in each; mpv-shelf was added on 2026-10-26 and Spatial-Lab, written new, on 2026-11-08).
 This one, **sdht**, is the front door: the build log, documentation, results and graphs. Each repository now also has its own docs site (install
 and usage reused from that repository's own README, not duplicated here).
 
@@ -12,8 +12,9 @@ and usage reused from that repository's own README, not duplicated here).
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | seek-bar thumbnails for a read-only film library (an rclone or debrid mount): built when you play a film, as a batch, or from a local web page where you tick the films and start, pause and stop; one set shared by the releases of a film; and the mpv viewer script. Now (2026-11-08): about 1.7 MB read per thumbnail and 88 to 315 s per 4K film on the author's rig, from tens to hundreds of MB and 12 to 25 minutes or more before | [docs](https://praveenchandrahas.github.io/seekthumbs/) |
 | **[mpv-shelf](https://github.com/praveenchandrahas/mpv-shelf)** | a Netflix-style film browser inside mpv (poster grid, Continue Watching, search, title pages) over the same library folder; plays by file path | [docs](https://praveenchandrahas.github.io/mpv-shelf/) |
 | **[Roomtone](https://github.com/praveenchandrahas/Roomtone)** | `autocal` (measure the room through CamillaDSP and propose a correction), test signals, recording procedures and analysers (sweep, sub, dialogue, reflections, soundbar comparison, second-sub drift), microphone calibration (`miccal.py`), REW data, the local control page (live per-speaker levels on a 5.1.2 plan, EQ and profile controls, an autocal page) and the mpv status overlay (key **C**) | [docs](https://praveenchandrahas.github.io/Roomtone/) |
+| **[Spatial-Lab](https://github.com/praveenchandrahas/Spatial-Lab)** | an interactive 3D test bench: drag a sound object around a model of the room in a web page and hear it move on the real speakers (VBAP panning in 3D including the heights, distance cues, per-speaker delay and polarity for phantom-image demonstrations, correlated against decorrelated noise, preset and recorded paths, an identify-each-speaker mode); a local Python engine plays through PipeWire either straight to the interface or through CamillaDSP, starts muted and has a level ceiling. Needs none of the other repositories | [docs](https://praveenchandrahas.github.io/Spatial-Lab/) |
 
-![One project, six repositories: every component placed in the repository that holds it](img/ecosystem-map.png)
+![One project, seven repositories: every component placed in the repository that holds it](img/ecosystem-map.png)
 
 *Every component in the repository that holds it. Grey boxes are other people's software or hardware.*
 

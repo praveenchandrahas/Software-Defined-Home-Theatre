@@ -65,7 +65,7 @@ for c in "$MPVCONF" "$HOME/.config/mpv"; do
 done
 echo
 echo "repository state (local only, no network):"
-for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf $RT; do
+for r in UMBRELLA linux-theater-dsp mpv-object-audio seekthumbs mpv-shelf $RT spatial-lab; do
   d="$WS/$r"; [ "$r" = UMBRELLA ] && d="$HERE"
   if [ -d "$d/.git" ]; then
     dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)

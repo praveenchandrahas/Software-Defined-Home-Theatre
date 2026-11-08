@@ -70,3 +70,6 @@ players than mpv-atmos should start the services.
 
 ## D17. Do not chase the sub below 30 Hz in the apartment
 Usable output ends near 30 Hz and film content under 25 Hz is rare. Revisit when moving to the independent house.
+
+## D18. Spatial-Lab: a separate repository, a local Python renderer, ceiling set by hand
+*Decided 2026-11-08.* The 3D test bench is its own repository so it can be used without the rest, and the sound is made by a local Python engine behind the web page rather than in the browser or through Omniphony's own object test. *Reasons:* the browser cannot address eight outputs or choose between the interface and CamillaDSP; the engine can pace blocks, enforce a level ceiling the page cannot change, and write the same blocks to a file for offline renders and tests; a panner of its own shows the panning maths on this exact layout. *Safety:* starts muted, ceiling -40 dBFS raised only by editing the config, 3 s fade-in, Esc mutes, mutes when the page goes away, LFE never used, no per-channel hard limit (the author's choice). *Local only:* 127.0.0.1, with Host and Origin checks, no LAN listener (the author's choice, as for the status page). *Cost:* a second layout file next to Roomtone's, and a second panner next to Omniphony's; *revisit* if they disagree on the same speaker.

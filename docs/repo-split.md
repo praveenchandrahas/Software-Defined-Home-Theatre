@@ -30,3 +30,7 @@ Each repository also runs its tests on GitHub (`.github/workflows/test.yml`), wi
 - Prose in the documentation names files by their old path (`scripts/set-eq.py`, `tools/sweeptest/`); links were rewritten to the new repositories, plain mentions were not. The table above maps old paths to repositories.
 - Code comments in the new repositories still point at `docs/runbook.md` and similar; those documents are in `sdht`.
 - The sandbox that prepared the split cannot create GitHub repositories. They are published with `publish-split.sh` (in the bundle that came with this change).
+
+## Added after the split: Spatial-Lab (2026-11-08)
+
+Spatial-Lab, the 3D listening test bench, is the seventh repository. It was not cut from this one: it was written new as its own repository (Apache-2.0, Python, no dependency on the other six). It reads its own layout file, `spatial_lab/layouts/author-5.1.2.yml`, not Roomtone's `layout.yml`, so a layout change has to be made in both places for now. It is picked up by `scripts/clone-all.sh`, `scripts/test-all.sh` (through its `tests/run.sh`) and the repository-state list in `scripts/check-installed.sh`. It is not packaged (no `.deb`) and is not in `versions.lock`; it runs from the repository (`python3 -m spatial_lab serve`).

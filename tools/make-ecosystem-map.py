@@ -20,14 +20,15 @@ REPO = {
     "Roomtone": "#2e8b57",
     "seekthumbs": "#8a5cb5",
     "mpv-shelf": "#b5527a",
+    "Spatial-Lab": "#b08a00",
     "sdht": "#5b6674",
 }
 
-fig, ax = plt.subplots(figsize=(16, 10.2), dpi=130)
+fig, ax = plt.subplots(figsize=(16, 12.4), dpi=130)
 fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
 ax.set_xlim(0, 160)
-ax.set_ylim(-6, 100)
+ax.set_ylim(-29, 100)
 ax.axis("off")
 
 
@@ -57,7 +58,7 @@ def arrow(x1, y1, x2, y2, dashed=False, color=INK, label=None, lx=None, ly=None,
                 ha=ha, va="center", fontsize=8, color=color)
 
 
-ax.text(2, 98, "One project, six repositories", fontsize=20, fontweight="bold", color=INK, va="top")
+ax.text(2, 98, "One project, seven repositories", fontsize=20, fontweight="bold", color=INK, va="top")
 ax.text(2, 93.4, "Each coloured frame is one GitHub repository and holds the parts drawn inside it. Grey boxes are other people's software or hardware.",
         fontsize=9.2, color=MUTED, va="top")
 
@@ -115,11 +116,22 @@ box(128, 6, 28, 14, "Mic calibration", ["removes the mic's own", "response from 
 # room.json is read by set-eq.py, which lives in linux-theater-dsp
 arrow(116, 39, 104, 60, dashed=True, color=REPO["Roomtone"], label="read by set-eq.py", lx=113, ly=52.5)
 
+# ---------------- listening tool (below the measurement band) ----------------
+ax.text(2, -0.8, "LISTENING: move a test sound around the room, on demand", fontsize=9.5, fontweight="bold", color=MUTED)
+group(2, -22.5, 156, 19.5, "Spatial-Lab", "3D test bench; needs none of the other repositories")
+box(4, -21, 36, 13.5, "Control page", ["Three.js room, drag the object,", "paths, record and replay"], repo="Spatial-Lab", tsize=9.4)
+box(44, -21, 40, 13.5, "Engine (Python)", ["VBAP panning, distance cues, delay,", "polarity, decorrelation; starts muted"], repo="Spatial-Lab", tsize=9.4)
+box(88, -21, 28, 13.5, "pw-cat", ["8 channels, PipeWire"], repo="Spatial-Lab", tsize=9.4)
+box(120, -21, 36, 13.5, "Output", ["Direct: the USB interface", "Through: CamillaDSP first"], ext=True, tsize=9.4)
+arrow(40, -14.2, 44, -14.2)
+arrow(84, -14.2, 88, -14.2)
+arrow(116, -14.2, 120, -14.2)
+
 # ---------------- sdht strip ----------------
-ax.add_patch(FancyBboxPatch((2, -4.4), 156, 3.4, boxstyle="round,pad=0.0,rounding_size=0.8", linewidth=2.0,
+ax.add_patch(FancyBboxPatch((2, -27.4), 156, 3.4, boxstyle="round,pad=0.0,rounding_size=0.8", linewidth=2.0,
                             edgecolor=REPO["sdht"], facecolor=REPO["sdht"] + "18"))
-ax.text(4, -2.7, "sdht (this repository)", fontsize=10.5, fontweight="bold", color=REPO["sdht"], va="center")
-ax.text(46, -2.7, "the front door: documentation, build log, measurement results and graphs, preflight health report, clone-all.sh",
+ax.text(4, -25.7, "sdht (this repository)", fontsize=10.5, fontweight="bold", color=REPO["sdht"], va="center")
+ax.text(46, -25.7, "the front door: documentation, build log, measurement results and graphs, preflight health report, clone-all.sh",
         fontsize=8.8, color=MUTED, va="center")
 
 for ext in ("png", "svg"):
