@@ -90,7 +90,7 @@ The engine asks for real-time priority directly, then through rtkit, and logs wh
 
 Commands: `eq mode auto|film|stereo|bed` (fixed override until `auto`), `eq flavour stereo|bed NAME`, `eq engine on|off`, `eq source` (what mpv reports and how it is classified;
 paste it if detection looks wrong), `eq status` (profile, Chrome patch state, source). With `eq off` nothing is switched or patched.
-Not verified on the real system yet: Chrome's PipeWire node name (check `eq status` while Chrome plays) and whether WirePlumber leaves a re-linked Chrome stream alone.
+Chrome's PipeWire node name and automatic profile switching have been in daily use on the real system (owner, 2026-11-08; dates not recorded). Not separately confirmed: whether WirePlumber leaves a re-linked Chrome stream alone when a film starts over it.
 
 ## Z906 rules
 

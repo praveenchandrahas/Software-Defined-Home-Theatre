@@ -112,7 +112,7 @@ Strengths: ambition and integration, measurement discipline, honest documentatio
 | `drone2` removes the drone and keeps the thump | Verified (recordings plus listening) |
 | Delays correct, speakers in phase | Measured |
 | Level trims equalise the speakers | Partial: post-trim check inconclusive |
-| Auto-routing at boot, `eq` switch mid-film | Simulated only |
+| Auto-routing and the `eq` switch mid-film | Owner-verified in daily use (dates not recorded); reboot-time routing not separately recorded |
 | Lip-sync with CamillaDSP in the path (estimated 20 to 45 ms) | Not tested |
 | Dialogue clarity and screen anchoring | Not tested |
 

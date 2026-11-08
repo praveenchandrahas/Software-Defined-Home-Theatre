@@ -196,13 +196,13 @@ More in [docs/runbook.md](docs/runbook.md); when something misbehaves, [docs/tro
 
 ## How much is measured?
 
-Claim by claim in [docs/status.md](docs/status.md) (updated 2026-10-24). "Measured" means measured at one seat with one microphone. In short:
+Claim by claim in [docs/status.md](docs/status.md) (updated 2026-11-08). "Measured" means measured at one seat with one microphone. In short:
 
 | Measured, and confirmed by listening or a second run | Measured once, not confirmed afterwards | Not yet tested on the real system |
 |---|---|---|
-| Bass voicing (`drone2`), by recordings and listening | Level trims: within about 2 dB in each run, but the same speaker moves by up to about 2.5 dB between runs (mic position) | Auto-routing and the `eq` switch (simulated only) |
+| Bass voicing (`drone2`), by recordings and listening | Level trims: within about 2 dB in each run, but the same speaker moves by up to about 2.5 dB between runs (mic position) | (none; auto-routing and the `eq` switch moved to verified, see below) |
 | Speaker delays: the seven full-range speakers within 0.2 ms of FL in sweep run 1 (up to 0.6 ms in run 2, mic moved). **The sub arrives 6 to 7 ms after FL; left uncompensated (inaudible as a delay here, crossover phase open)** | Heights bass management: heights + sub within 2.6/2.7 dB rms of the bed over 40-400 Hz (the heights alone: 41 dB). Heights tone: 3.1/3.5 dB rms from the bed against 4.5/4.1, about 1 dB closer, inside the run-to-run noise. Trim lowered to +1.0 dB, not re-measured | Routing to the rig after a reboot (needs the USB interface connected) |
-| Live Atmos object rendering through the whole chain | Sub range: harmonics below 3 % down to about 40 Hz, usable to 36 Hz, nothing usable under 22 Hz | Automatic profile switching (Chrome, 5.1, stereo) |
+| Live Atmos object rendering through the whole chain; auto-routing, automatic profile switching and the `eq` switch, in daily use (owner-reported, dates not recorded) | Sub range: harmonics below 3 % down to about 40 Hz, usable to 36 Hz, nothing usable under 22 Hz | (none) |
 | Services and standing profile start at boot (2026-10-24, away from the rig) | Early reflections: FC and FR meet the ITU-R BS.1116 limit; FL and both heights exceed it by one reflection each; panel effect untested | Upmix presets by ear (measured offline only) |
 | Lip-sync: the author's listening, not measured | Dialogue kit (2026-10-24): STIPA-style STI 0.79 to 0.83, dialogue 13 to 18 dB above the noise; centre has +5.7 dB boom and -3.3 dB presence | |
 | | Polarity: all speakers in phase | |
