@@ -68,7 +68,7 @@ says openly. The user's own contributions that I could check: a bug filed and a 
 **Caveats**
 - Version lag `[V]`: rig records liborender 0.3.0 and bridge API 0.3.0 (built Jul/Aug 2026). Upstream v0.6.0 notes say bridge API moved 0.3 to 0.4 and "requires harletty-bridge 0.8.0, update together"; v0.7.0 lists liborender ABI 0.12 and bridge_api 0.6.x.
   The rig's harletty library "carries no version". An update is a coordinated change of engine, bridge and player.
-- DTS:X on the rig: a DTS:X clip played with sound on 2026-10-25 (USB interface not connected); decoding as DTS:X objects is not yet confirmed `[V, docs/installation.md]`.
+- DTS:X on the rig: a DTS:X clip played with sound on 2026-10-25 (USB interface not connected); decoding as DTS:X objects was later confirmed by the owner on a real DTS:X film (the date of that play was not recorded; the checklist item was ticked off on 2026-10-29) `[V, docs/todo-fill-in.md]`.
 - No measured latency or CPU cost of the live decode and render chain `[V, todo list]`.
 - Rendering fidelity is unvalidated `[I]`: VBAP onto two ceiling speakers is a coarse height model; I found no comparison against Dolby's own renderer by anyone, including the author.
 - Omniphony's own docs list no room correction, bass management or distance compensation in the engine `[V]`; the rig correctly puts those in CamillaDSP.
