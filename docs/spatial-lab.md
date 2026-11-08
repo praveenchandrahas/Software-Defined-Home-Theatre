@@ -50,4 +50,5 @@ python3 -m spatial_lab serve --open
 - Provisional geometry: the heights' distance, the ceiling height, the seat-to-back-wall distance, and the surround distance (3 ft stated; the CamillaDSP delay and trim for them suggest about 5 ft). They affect only the 3D drawing and the Direct-mode alignment.
 - Both ceiling speakers are ahead of the seat, so an object directly overhead lands on the heights plus the surrounds; height is level-only, with no spectral cue.
 - A browser tab left in the background for minutes may have its timers throttled enough to trip the watchdog; the result is a mute.
-- Not done: microphone verification, an A/B against Omniphony's own object test, a `.deb`.
+- Not done: microphone verification, an A/B against Omniphony's own object test, adding the `.deb` to `versions.lock` and the `sdht` meta package.
+- Installing: the `.deb` is on the Spatial-Lab release page (`sudo apt install ./spatial-lab_0.1.0_all.deb`; installed by the author on 2026-11-08, and `spatial-lab check` found `pw-cat`, `pw-link`, `ffmpeg` and CamillaDSP; it stopped at the missing USB sink because the interface was not connected).

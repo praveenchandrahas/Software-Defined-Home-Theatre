@@ -118,7 +118,7 @@ arrow(116, 39, 104, 60, dashed=True, color=REPO["Roomtone"], label="read by set-
 
 # ---------------- listening tool (below the measurement band) ----------------
 ax.text(2, -0.8, "LISTENING: move a test sound around the room, on demand", fontsize=9.5, fontweight="bold", color=MUTED)
-group(2, -22.5, 156, 19.5, "Spatial-Lab", "3D test bench; needs none of the other repositories")
+group(2, -22.5, 156, 19.5, "Spatial-Lab", "3D test bench; own .deb; needs none of the other repositories")
 box(4, -21, 36, 13.5, "Control page", ["Three.js room, drag the object,", "paths, record and replay"], repo="Spatial-Lab", tsize=9.4)
 box(44, -21, 40, 13.5, "Engine (Python)", ["VBAP panning, distance cues, delay,", "polarity, decorrelation; starts muted"], repo="Spatial-Lab", tsize=9.4)
 box(88, -21, 28, 13.5, "pw-cat", ["8 channels, PipeWire"], repo="Spatial-Lab", tsize=9.4)
