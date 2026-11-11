@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-11
+- **Roomtone control page: the sound field is a 3D view** (owner's request). Plain canvas projection, no library; drag to turn the room, 3D/Top/Side buttons, speaker heights fixed by kind (bed at ear height, ceiling speakers up, sub on the floor), so positions are schematic. Same after-EQ levels from CamillaDSP. Tested in simulation only; the screenshots in the Roomtone README were redrawn from simulated data.
+
 ## 2026-11-08
 - **Spatial-Lab packaged and released:** a `.deb` (`spatial-lab_0.1.0_all.deb`) on its v0.1.0 release page, linked docs site and screenshots in its README. The author installed it on the rig laptop and `check` ran correctly; sound not yet tested (USB interface not connected). Repository map, packaging, repo-split, status, to-do and the ecosystem map updated to say so; it is not in `versions.lock` or the `sdht` meta package.
 - **Status corrected:** auto-routing, automatic profile switching and the `eq` switch were still listed as "simulated only / not yet tested on the real system". The owner confirmed (2026-11-08) they have been in daily use on the rig for days; the dates were not recorded, so the rows say so, with the autocal run of 2026-10-28 as the earliest dated corroboration. Reboot with the Vantec connected was also done many times (owner). The Chrome hand-back to WirePlumber, the direct-fallback check and the adaptive engine checks stay open.
