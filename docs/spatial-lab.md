@@ -2,7 +2,7 @@
 
 [Spatial-Lab](https://github.com/praveenchandrahas/Spatial-Lab) (added 2026-11-08, [its own docs site](https://praveenchandrahas.github.io/Spatial-Lab/)) is the part of this project for *listening* to the room. The other repositories play films and measure the room; this one moves a test sound around the real speakers on demand, so panning, height, distance cues and phantom imaging can be heard rather than inferred from a sweep.
 
-**Evidence level, first.** Tested in simulation (30 automated tests, and the page in a headless browser). **Not yet run on the rig**: real sound through PipeWire, the links to the interface and to CamillaDSP, and anything about how it sounds. Its "predicted image" is computed from the speaker gains, not measured. See [Status](status.md).
+**Evidence level, first.** 32 automated tests and a headless browser run. **Run on the rig with real sound** (reported 2026-11-16; earlier dates not recorded): the USB sink and the CamillaDSP links are found and the page makes sound. The first round of listening found the channels on the wrong speakers and no easy way to reach the heights; version 0.1.1 changes how channels are linked and adds speaker buttons, an Elevation slider and click-a-speaker. **Not yet confirmed:** the channel order after that fix, a recorded Direct against Through comparison, and whether the imaging sounds as predicted. Its "predicted image" is computed from the speaker gains, not measured. See [Status](status.md).
 
 ## What it does
 
@@ -51,4 +51,5 @@ python3 -m spatial_lab serve --open
 - Both ceiling speakers are ahead of the seat, so an object directly overhead lands on the heights plus the surrounds; height is level-only, with no spectral cue.
 - A browser tab left in the background for minutes may have its timers throttled enough to trip the watchdog; the result is a mute.
 - Not done: microphone verification, an A/B against Omniphony's own object test, adding the `.deb` to `versions.lock` and the `sdht` meta package.
-- Installing: the `.deb` is on the Spatial-Lab release page (`sudo apt install ./spatial-lab_0.1.0_all.deb`; installed by the author on 2026-11-08, and `spatial-lab check` found `pw-cat`, `pw-link`, `ffmpeg` and CamillaDSP; it stopped at the missing USB sink because the interface was not connected).
+- Installing: the `.deb` is on the Spatial-Lab release page (`sudo apt install ./spatial-lab_<version>_all.deb`); the author installed it on 2026-11-08 and uses it on the rig.
+- On the rig: the author has run it with real sound on the rig (reported 2026-11-16; earlier dates not recorded): `check` finds the USB sink and the CamillaDSP links, the engine starts on the author's `pw-cat`, and the page makes sound through the speakers. The first round found the channels on the wrong speakers and no easy way to send the object to the heights; 0.1.1 links by port index and adds speaker buttons, an Elevation slider and click-a-speaker, **not yet confirmed on the rig**.
