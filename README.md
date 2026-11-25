@@ -10,7 +10,7 @@
 **At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
 two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
 EQ, delays and trims, and the amplifiers only amplify.
-**For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log with working scripts, not a packaged product.
+**For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log and a set of open tools; pre-release, experimental and used on one rig, not a finished product.
 **Needs:** Kubuntu 24.04, PipeWire, Omniphony, harletty-bridge, a patched mpv, CamillaDSP and a 7.1 USB interface (details under [Quick start](#quick-start-on-a-new-machine);
 exact versions are still to be filled in, see [Still to fill in](#still-to-fill-in)).
 **Status:** everything below was measured at one seat, in one room, with one microphone. "Measured" here means that; see [How much is measured?](#how-much-is-measured) and

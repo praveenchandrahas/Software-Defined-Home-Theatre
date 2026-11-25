@@ -6,7 +6,7 @@
 two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
 EQ, delays and trims, and the amplifiers only amplify.
 
-**For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log with working scripts, not a packaged product.
+**For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log and a set of open tools; pre-release, experimental and used on one rig, not a finished product.
 
 **Needs:** Kubuntu 24.04, PipeWire, Omniphony, harletty-bridge, a patched mpv, CamillaDSP and a 7.1 USB interface — see [Install](installation.md).
 
