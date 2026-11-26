@@ -28,6 +28,7 @@ nav:
   - Install:
       - Quick start / packaged install: installation.md
       - Packaging details: packaging.md
+      - Stremio streams in mpv-object-audio: stremio-handoff.md
   - How it's built:
       - Architecture: architecture.md
       - Technical write-up: technical-writeup.md
