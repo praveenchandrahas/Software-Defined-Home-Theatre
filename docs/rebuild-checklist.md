@@ -67,7 +67,7 @@ None of them can be regenerated from the repositories. The list is the one in [r
 
 ## 6. Media mount (Decypharr, FUSE)
 
-- [ ] Install Decypharr and mount the library with FUSE. How much of this to document is the author's choice ([installation.md](installation.md#still-todoowner)), so the settings are not in the repositories. Restore them from your own backup.
+- [ ] Install Decypharr and mount the library with FUSE. How much of this to document is the author's choice ([installation.md](installation.md#recorded-since)), so the settings are not in the repositories. Restore them from your own backup.
 - [ ] Check `ls` on the mount and a short read of one film before moving on. Slow first reads on the mount are known ([todo-fill-in.md](todo-fill-in.md)).
 
 ## 7. Audio hardware, routing, DSP and control

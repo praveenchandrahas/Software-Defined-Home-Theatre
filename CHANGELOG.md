@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-11-27
+- **Docs: the recorded laptop and versions everywhere.** The README's "Needs" line said exact versions were still to be filled in, and the architecture page still asked for the laptop model, though both were recorded on 2026-10-24 (`collect-versions.sh`), 2026-10-25 (the player's `VERSIONS`) and 2026-11-01 (`capture-pins.sh`). Now the README, the site's home page and the architecture page name the laptop (TIMI Mi NoteBook Ultra, Core i5-11300H, 15.4 GB, Iris Xe; Ubuntu 24.04.5, kernel 7.0.0-38), and the README's "Still to fill in" section is "Versions on the reference laptop", with the player in use (`mpv-object-audio`: engine v0.7.0, harletty-bridge v0.9.0, mpv v0.41.0-72) apart from the backup (`mpv-atmos`). The installation page's TODO list is replaced by what was decided and recorded since; the "Daily use" paragraph no longer says routing is untested on the rig; settled checklist items are ticked (mpv-shelf, GitHub topics, CI). Still not recorded and still listed: the engine's `config.yaml`, a version listing with the USB interface plugged in, and the PipeWire port names in troubleshooting.
 - **Release 0.2.0 prepared:** `versions.lock` pins seekthumbs 0.2.0 (its released `.deb`, sha256 checked against that release's SHA256SUMS); `VERSION`, `install.sh` and `RELEASES.md` say 0.2.0. The other components stay at 0.1.0.
 
 ## 2026-11-26

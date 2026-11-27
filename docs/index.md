@@ -10,6 +10,8 @@ EQ, delays and trims, and the amplifiers only amplify.
 
 **Needs:** Kubuntu 24.04, PipeWire, Omniphony, harletty-bridge, a patched mpv, CamillaDSP and a 7.1 USB interface — see [Install](installation.md).
 
+**Built and run on:** a TIMI Mi NoteBook Ultra (Core i5-11300H, 15.4 GB RAM, Iris Xe) with Kubuntu 24.04 (Ubuntu 24.04.5, kernel 7.0.0-38), PipeWire 1.0.5, CamillaDSP 4.1.3, Omniphony engine v0.7.0, harletty-bridge v0.9.0 and mpv 0.41.0. Every version, with paths and checksums: [Install](installation.md#2-player-stack).
+
 **Status:** everything on this site was measured at one seat, in one room, with one microphone. See [Status and what's verified](status.md) before relying on any number. The analysis
 code that produced the numbers was written with an AI assistant. It was checked against simulated rooms and REW exports and used on real recordings in the author's room, but it has not
 been repeated by another person or a second tool — see [Authorship](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre#authorship-and-licence) in the repository README.

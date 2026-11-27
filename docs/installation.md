@@ -1,9 +1,6 @@
 # Installation
 
-This repository covers the audio routing, DSP and measurement parts. The player stack (Omniphony, harletty-bridge,
-mpv-omniphony) and the media library were set up before this repository existed; their steps are TODO(owner); run `scripts/collect-versions.sh` on the laptop to gather their versions, install paths and `mpv.conf` in
-section 2. Everything else below has been used on the real system, except the auto-router, which has only been
-tested in simulation (see [status.md](status.md)).
+This repository covers the audio routing, DSP and measurement parts. The player in use, `mpv-object-audio` (the Omniphony engine, harletty-bridge and an mpv built from mpv-omniphony), is installed by `scripts/object-audio-install.sh` ([below](#mpv-object-audio-the-omniphony-player-stack-2026-10-25)). The earlier hand-built player behind `mpv-atmos` is kept as a backup and is not updated (decided 2026-10-29); section 2 records both. Everything below is in use on the real system: the auto-router, profile switching and the `eq` switch have run daily since the first days of November 2026, through many reboots with the USB interface connected ([status.md](status.md)). The media library mount is not covered here.
 
 ## 1. Requirements
 
@@ -20,10 +17,12 @@ Debian/Ubuntu-style packages: `pipewire-bin wireplumber pulseaudio-utils ffmpeg 
 
 ### Versions recorded on the reference laptop (2026-10-24, from `scripts/collect-versions.sh`)
 
+The laptop, the operating system and the audio parts are what the rig runs today. The Omniphony, harletty-bridge and mpv rows are the **backup** player, `mpv-atmos`; the player in use, `mpv-object-audio`, is recorded [below](#mpv-object-audio-the-omniphony-player-stack-2026-10-25): engine v0.7.0, harletty-bridge v0.9.0, mpv v0.41.0-72-ge006f5ca0.
+
 | Part | Version and where | Notes |
 |------|-------------------|-------|
 | Laptop | TIMI "Mi NoteBook Ultra", Core i5-11300H, 15.4 GB, Iris Xe | VAAPI driver iHD 24.1.0, Mesa Vulkan 25.2.8 |
-| OS | Ubuntu 24.04.5 LTS, kernel 7.0.0-38-generic, KDE on Wayland | |
+| OS | Kubuntu 24.04 (Ubuntu 24.04.5 LTS), kernel 7.0.0-38-generic, KDE Plasma on Wayland | The author's everyday laptop, not a dedicated media PC |
 | PipeWire | 1.0.5 (`1.0.5-1ubuntu3.3`) | clock 48 kHz only, quantum 1024 (min 32, max 2048) |
 | WirePlumber | 0.4.17 (`0.4.17-1ubuntu4.1`) | |
 | CamillaDSP | 4.1.3 (05e9cfc), `/usr/local/bin/camilladsp`, user service `camilladsp.service` | PipeWire capture and playback, 8 channels, chunk size 1024; config `~/.config/camilladsp/config.yml` is written by `set-eq.py` |
@@ -31,18 +30,19 @@ Debian/Ubuntu-style packages: `pipewire-bin wireplumber pulseaudio-utils ffmpeg 
 | harletty-bridge | `libharletty_bridge.so`, 3,636,184 bytes (2 Aug), bridge API 0.3.0, built with rustc 1.97.1 | The library carries no version number or commit. A copy sits in `~/.local/share/omniphony/lib/` and the one mpv is told to use is next to the mpv-omniphony build |
 | mpv-omniphony | mpv 0.41.0 (patched, "-dirty"), built from source on 2 Aug 2026 16:19, `~/HomeTheatre/Omniphony/mpv-omniphony-v0.4.2-linux-x86_64/mpv-omniphony/build/mpv-v0.41.0/_b/mpv` | FFmpeg 6.1.1-3ubuntu5+esm15, libplacebo 6.338.2. The system mpv (0.37.0) and a snap mpv are separate and not used by `mpv-atmos` |
 
-Not yet confirmed: whether the running mpv has loaded the bridge (the check needs a film playing), and the contents of `~/.config/omniphony/config.yaml` (23 Oct, "measured layout"). The USB interface was not plugged in during this run, so the audio-device section shows only the laptop's own outputs.
+Both players load their bridge: Atmos and DTS:X films play with object rendering on the rig. Still not recorded: the contents of `~/.config/omniphony/config.yaml` (23 Oct, "measured layout"). The USB interface was not plugged in during this run, so the audio-device section shows only the laptop's own outputs.
 
 ### mpv configuration
 
-There is **no `mpv.conf`** on the rig. Everything (decoder, VAAPI, gpu-next on Vulkan, tone-mapping to 60 nits, debanding, cache) is passed on the command line by the `mpv-atmos` wrapper; the repository copy is `scripts/mpv-atmos`. Besides the wrapper, `~/.config/mpv/` holds `input.conf` (`o` toggles the Omniphony trajectory overlay), the `uosc` on-screen UI with its `script-opts/uosc.conf`, and `scripts/mpv-atmos-overlay-off.lua` (the repository copy is `scripts/mpv-atmos-overlay-off.lua`).
+There is **no `mpv.conf`** in use. Both players get their options from their wrapper on the command line: the decoder, VAAPI, gpu-next on Vulkan, tone-mapping to 60 nits, debanding and the cache.
 
-**The wrapper installed on the laptop is older than the repository copy.** It runs `eq ensure` but not `eq prepare`, and it does not open mpv's IPC socket (`--input-ipc-server`), so automatic profile selection per file cannot work from it. To use it, copy `scripts/mpv-atmos` over `~/.local/bin/mpv-atmos` (the `OMNI=` path in it is the one this laptop uses).
+- **`mpv-object-audio`** (in use) runs with `--config-dir=~/.config/mpv-object-audio`, so plain mpv and `mpv-atmos` never read its settings. Its installer copied `input.conf`, `script-opts`, `scripts` and `fonts` from `~/.config/mpv` once; after that the two folders are separate. The `mpv.conf` in that folder holds only a comment. The wrapper calls `eq ensure` and `eq prepare` and opens mpv's IPC socket, so the router can pick the profile for each film.
+- **`mpv-atmos`** (backup) reads `~/.config/mpv/`: `input.conf` (`o` toggles the Omniphony trajectory overlay), the `uosc` on-screen UI with its `script-opts/uosc.conf`, and `scripts/mpv-atmos-overlay-off.lua` (the repository copies are `scripts/mpv-atmos` and `scripts/mpv-atmos-overlay-off.lua`). The copy installed on the laptop is older than the repository's: it runs `eq ensure` but not `eq prepare` and opens no IPC socket, so automatic profile selection does not work from it. It is not being updated (decided 2026-10-29), since `mpv-atmos` is only the backup.
 
-### Still TODO(owner)
+### Recorded since
 
-- Superseded by the from-source installer `scripts/object-audio-install.sh` (below). Still TODO(owner): record the versions it installs after the first real run (`mpv-object-audio --oa-info`) and decide when `mpv-atmos` is retired.
-- Media library mount (decide how much to document).
+- `mpv-object-audio`'s versions after its first real run on 2026-10-25, from `~/.local/opt/mpv-object-audio/VERSIONS`: engine v0.7.0 (ABI 0.12), harletty-bridge v0.9.0 (bridge API 0.6.0), Omniphony 55af2c5, mpv-omniphony b84a7c7, mpv v0.41.0-72-ge006f5ca0. `mpv-atmos` stays as the backup; it is not retired.
+- The media library is a Decypharr FUSE mount; Decypharr runs in a Docker container on the laptop. Its setup is not documented here, and where the films come from is deliberately not stated (decided 2026-10-26).
 
 ## 3. Configure the interface name
 
@@ -101,4 +101,4 @@ scripts/object-audio-install.sh remove
 
 Entry points: `mpv-object-audio FILE` in a terminal; Dolphin right-click submenu "mpv-object-audio" (play, fullscreen, play with log in Konsole, show streams); "Open with" in any KDE file dialog. It is not made the default handler. The DSP hooks (`eq ensure`, `eq prepare`) and the IPC socket are shared with `mpv-atmos` on purpose, so the router and the automatic profile switching work unchanged; `OBJECT_AUDIO_DSP=0` turns them off. The bridge pairing: the latest engine and the latest bridge release should match (the bridge notes say which Omniphony they require); pin with `OA_OMNIPHONY_TAG` / `OA_BRIDGE_TAG` if they do not.
 
-**Run on the rig 2026-10-25** (laptop away from the DAC): the asset names matched, the build finished, the engine (v0.7.0, ABI 0.12) and the three bridges (v0.9.0, bridge_api 0.6.0, Omniphony 55af2c5) loaded, and an Atmos TrueHD clip and a DTS:X clip played with sound. Not yet checked with the DAC: routing through CamillaDSP (`preflight playing`) and the level against `mpv-atmos` (`preflight compare FILE`: the new engine logs a -8 dB dialogue normalisation on the Atmos clip). The engine config `~/.config/omniphony/config.yaml` is shared with `mpv-atmos`, so layout and render settings are common to both players. The installed router was updated the same day with `install-autoroute.sh` (it was older than the repository's and lacked `eq prepare`). The download step needs GitHub's API, which a rate limit can refuse: set `GITHUB_TOKEN`.
+**Run on the rig 2026-10-25** (laptop away from the DAC): the asset names matched, the build finished, the engine (v0.7.0, ABI 0.12) and the three bridges (v0.9.0, bridge_api 0.6.0, Omniphony 55af2c5) loaded, and an Atmos TrueHD clip and a DTS:X clip played with sound. Since then `mpv-object-audio` has been the player in daily use with the DAC, routed through CamillaDSP by the router (owner, by 2026-11-08). Not recorded: the level comparison against `mpv-atmos` (`preflight compare FILE`: the new engine logs a -8 dB dialogue normalisation on the Atmos clip). The engine config `~/.config/omniphony/config.yaml` is shared with `mpv-atmos`, so layout and render settings are common to both players. The installed router was updated the same day with `install-autoroute.sh` (it was older than the repository's and lacked `eq prepare`). The download step needs GitHub's API, which a rate limit can refuse: set `GITHUB_TOKEN`.

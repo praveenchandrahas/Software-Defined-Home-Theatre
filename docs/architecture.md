@@ -135,14 +135,13 @@ again with a recording. That loop is how every preset and the alignment table we
 
 | Item | Notes |
 |------|-------|
-| Computer | Linux laptop (Kubuntu). TODO(owner): exact model, kernel, desktop version. A desktop PC build is planned. |
+| Computer | TIMI Mi NoteBook Ultra (Intel Core i5-11300H, 15.4 GB RAM, Intel Iris Xe graphics), running Kubuntu 24.04 (Ubuntu 24.04.5 LTS, kernel 7.0.0-38-generic, KDE Plasma on Wayland). It is the author's everyday laptop, not a dedicated media PC; a desktop is planned. |
 | Video | BenQ W1070 (primary display, 1080p DLP) on a 107" DIY screen (gypsum board with matte paint), 16:9. Two sources: this laptop, and a Fire Stick 4K Max (1st gen) through a TD-876H HDMI to optical splitter, whose TOSLINK feeds the Z906. Video is not otherwise covered by this repo. |
 | Interface | Vantec 7.1 USB (C-Media, USB id 0d8c); PipeWire sink `alsa_output.usb-0d8c_USB_Sound_Device-00.analog-surround-71` |
 | Bed speakers | Logitech Z906 (5 satellites + sub, analog direct inputs, its own bass management). **Sub level and the knob positions are kept fixed** (see [runbook.md](runbook.md)). |
-| Heights | Two speakers (Samsung) on a separate amplifier, no subwoofer |
+| Heights | Two Samsung SWA-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired) on the ceiling, driven from the interface's rear outputs by a Salcon Class-D 2 x 50 W amplifier, no subwoofer |
 | Microphone | Dayton iMM-6S with its calibration file, on a SPACETOUCH USB audio adapter (ALSA card 1) |
 | Room | 10 x 10 ft, first reflections treated (panels, carpet, matte surfaces) |
 | Related builds | Custom subwoofer (JBL A1500HI, 75 L vented, tuned about 24-25 Hz): on hold, not in the signal chain. |
 
-Software versions seen: CamillaDSP 4.1.3, liborender ABI 0.6 (0.3.0, commit 6ffaf21, built 2026-07-24),
-mpv-omniphony 0.4.2 (mpv 0.41.0), PipeWire 1.0.5, WirePlumber 0.4.17, REW 5.31.3; harletty-bridge carries no version number. Full table: [installation.md](installation.md#2-player-stack).
+Software versions on the rig: PipeWire 1.0.5, WirePlumber 0.4.17, CamillaDSP 4.1.3, REW 5.31.3. The player in use, `mpv-object-audio` (since 2026-10-25), runs the Omniphony engine v0.7.0 (ABI 0.12) with harletty-bridge v0.9.0 and mpv v0.41.0-72-ge006f5ca0 built from mpv-omniphony; the backup, `mpv-atmos`, runs liborender 0.3.0 with an older harletty-bridge (bridge API 0.3.0) and mpv 0.41.0 built on 2026-08-02. Full table: [installation.md](installation.md#2-player-stack).
