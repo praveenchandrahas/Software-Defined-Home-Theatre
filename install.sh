@@ -20,7 +20,7 @@
 # Recommended way to run it: download, read, verify, run (docs/packaging.md). Do not pipe it from curl into a shell.
 set -euo pipefail
 
-RELEASE=v0.1.0                                      # the release this copy of the script belongs to (the release workflow checks it against the tag)
+RELEASE=v0.2.0                                      # the release this copy of the script belongs to (the release workflow checks it against the tag)
 REPO=praveenchandrahas/Software-Defined-Home-Theatre
 BASE=${SDHT_BASE_URL:-https://github.com/$REPO/releases/download}
 DOCS=https://github.com/$REPO/blob/main/docs

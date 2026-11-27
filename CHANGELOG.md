@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-27
+- **Release 0.2.0 prepared:** `versions.lock` pins seekthumbs 0.2.0 (its released `.deb`, sha256 checked against that release's SHA256SUMS); `VERSION`, `install.sh` and `RELEASES.md` say 0.2.0. The other components stay at 0.1.0.
+
 ## 2026-11-26
 - **seekthumbs: thumbnails for streamed films.** A film streamed over http(s) has no path in the library, so it never had thumbnails. With `install-viewer --live` the viewer starts `seekthumbs.py live` in the background when a stream starts: one thumbnail every 10 s, 320 px, 8 parallel reads, the gaps halved so the bar fills evenly, raw frames the viewer shows straight from a file (nothing is started on a hover), everything dropped when mpv closes. The link is resolved once; bursts of dropped connections are waited out (an early version stopped at 436 of 943 on one), and the build stops if the source keeps refusing. Measured on the rig with `tools/live-check.py` while the stream played: a 157-minute 4K HDR10 stream (74.6 GB) read about 2 MB per thumbnail (about 2 GB for the film), 0.70 thumbnails a second at 4 parallel reads and 0.92 at 8; no cache drop, no dropped frames. The owner confirmed the thumbnails on the seek bar with uosc. Also in seekthumbs: the `.deb` now installs `realdebrid.py` (it was missing, so `source = rd` failed in the packaged install), and the viewer's message to uosc no longer fails on mpv 0.37.
 - **Docs:** README (repository table, timeline, the seekthumbs section), repos page and status page updated for the above.
