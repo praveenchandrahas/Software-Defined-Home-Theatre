@@ -4,13 +4,14 @@
 set -u
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
-REL=$T/rel/v0.1.0; STUB=$T/stub; mkdir -p "$REL" "$STUB" "$T/home"
+TAG=$(sed -n 's/^RELEASE=\(v[0-9.]*\).*/\1/p' "$(dirname "$0")/../install.sh"); V=${TAG#v}     # the release install.sh belongs to: the fake release below uses it
+REL=$T/rel/$TAG; STUB=$T/stub; mkdir -p "$REL" "$STUB" "$T/home"
 printf '#!/bin/sh\necho "$@" >> %s/apt.log\n' "$T" > "$STUB/apt-get"; chmod +x "$STUB/apt-get"
 printf '#!/bin/sh\nexec "$@"\n' > "$STUB/sudo"; chmod +x "$STUB/sudo"   # the CI runner is not root: keep sudo from reaching the real apt
-for n in linux-theater-dsp roomtone; do echo "fake $n" > "$REL/${n}_0.1.0_all.deb"; done
-echo "fake sdht" > "$REL/sdht_0.1.0_all.deb"
-{ printf '# test lock\nsdht_version=0.1.0\n'
-  for n in linux-theater-dsp roomtone; do printf 'deb\t%s\t0.1.0\t%s_0.1.0_all.deb\t%s\n' "$n" "$n" "$(sha256sum "$REL/${n}_0.1.0_all.deb" | cut -d' ' -f1)"; done; } > "$REL/versions.lock"
+for n in linux-theater-dsp roomtone; do echo "fake $n" > "$REL/${n}_${V}_all.deb"; done
+echo "fake sdht" > "$REL/sdht_${V}_all.deb"
+{ printf '# test lock\nsdht_version=%s\n' "$V"
+  for n in linux-theater-dsp roomtone; do printf 'deb\t%s\t%s\t%s_%s_all.deb\t%s\n' "$n" "$V" "$n" "$V" "$(sha256sum "$REL/${n}_${V}_all.deb" | cut -d' ' -f1)"; done; } > "$REL/versions.lock"
 ( cd "$REL" && sha256sum -- * > SHA256SUMS )
 fail=0; ck() { if [ "$2" = ok ]; then echo "PASS $1"; else echo "FAIL $1"; fail=1; fi; }
 run() { PATH="$STUB:$PATH" HOME="$T/home" SDHT_BASE_URL="file://$T/rel" bash "$HERE/install.sh" "$@" 2>&1; }
@@ -25,17 +26,17 @@ rm -rf "$kept"
 
 out=$(run --yes --no-camilladsp); rc=$?
 ck "a good release exits 0" "$([ $rc = 0 ] && echo ok)"
-ck "apt got exactly the three packages" "$([ "$(cat "$T/apt.log")" = "install -y ./linux-theater-dsp_0.1.0_all.deb ./roomtone_0.1.0_all.deb ./sdht_0.1.0_all.deb" ] && echo ok)"
+ck "apt got exactly the three packages" "$([ "$(cat "$T/apt.log")" = "install -y ./linux-theater-dsp_${V}_all.deb ./roomtone_${V}_all.deb ./sdht_${V}_all.deb" ] && echo ok)"
 ck "it says the player stack is only checked" "$(echo "$out" | grep -q 'never downloaded here' && echo ok)"
 ck "it printed next steps" "$(echo "$out" | grep -q 'sdht-setup --dry-run install' && echo ok)"
 
-rm -f "$T/apt.log"; echo "tampered" >> "$REL/roomtone_0.1.0_all.deb"
+rm -f "$T/apt.log"; echo "tampered" >> "$REL/roomtone_${V}_all.deb"
 out=$(run --yes --no-camilladsp); rc=$?
 ck "a tampered package stops the run (non-zero)" "$([ $rc != 0 ] && echo ok)"
-ck "the mismatch is reported" "$(echo "$out" | grep -q 'CHECKSUM MISMATCH for roomtone_0.1.0_all.deb' && echo ok)"
+ck "the mismatch is reported" "$(echo "$out" | grep -q "CHECKSUM MISMATCH for roomtone_${V}_all.deb" && echo ok)"
 ck "apt was never called after a mismatch" "$([ ! -e "$T/apt.log" ] && echo ok)"
 
-( cd "$REL" && echo "fake roomtone" > roomtone_0.1.0_all.deb && sed -i "s/^deb\tlinux-theater-dsp\t0.1.0\t\([^\t]*\)\t.*/deb\tlinux-theater-dsp\t0.1.0\t\1\t0000/" versions.lock && find . -type f ! -name SHA256SUMS -printf "%f\n" | sort | xargs sha256sum -- > SHA256SUMS )
+( cd "$REL" && echo "fake roomtone" > roomtone_${V}_all.deb && sed -i "s/^deb\tlinux-theater-dsp\t${V}\t\([^\t]*\)\t.*/deb\tlinux-theater-dsp\t${V}\t\1\t0000/" versions.lock && find . -type f ! -name SHA256SUMS -printf "%f\n" | sort | xargs sha256sum -- > SHA256SUMS )
 out=$(run --yes --no-camilladsp); rc=$?
 ck "a lock that disagrees with SHA256SUMS stops the run" "$([ $rc != 0 ] && echo "$out" | grep -q 'disagree' && echo ok)"
 
