@@ -307,7 +307,7 @@ if __name__ == "__main__":
     out = sys.argv[1]
     mix, report = build()
     for r in report:
-        print("%-9s target %6.1f LUFS  gain %+6.1f dB" % r)
+        print("%-9s target %6s LUFS  gain %+6.1f dB" % (r[0], "fixed" if r[1] is None else "%.1f" % r[1], r[2]))
     for name, (a, c) in [("open", (2.5, 8.5)), ("echo", (8, 18)), ("rain", (18, 30)), ("storm", (30, 42)), ("drop", (45.5, 50)),
                          ("canyon", (50, 65)), ("orbit", (65, 75)), ("hit", (77.8, 90)), ("title", (90, 98))]:
         print("%-7s short-term max %6.1f LUFS" % (name, short_term_max(mix, a, c)))
