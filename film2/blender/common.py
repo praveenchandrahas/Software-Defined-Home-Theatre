@@ -1,7 +1,9 @@
 """Shared Blender helpers. Scene-linear units: 1.0 = 100 nits (SDR reference white), 10.0 = 1000 nits."""
-import math
+import math, os, sys
 import bpy
 from mathutils import Vector
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+import timeline as T  # noqa: E402
 
 FPS = 24
 
@@ -76,6 +78,8 @@ def material(name, color=(1, 1, 1), emission=0.0, emission_color=None, roughness
     p.inputs["Transmission Weight"].default_value = transmission
     p.inputs["IOR"].default_value = ior
     p.inputs["Alpha"].default_value = alpha
+    if transmission and hasattr(m, "use_raytrace_refraction"):
+        m.use_raytrace_refraction = True          # Eevee: refract what is behind, not only what is on screen
     if emission:
         p.inputs["Emission Color"].default_value = (*(emission_color or color), 1)
         p.inputs["Emission Strength"].default_value = emission
@@ -136,6 +140,53 @@ def key(obj, frame, **props):
     for k, v in props.items():
         setattr(obj, k, v)
         obj.keyframe_insert(data_path=k, frame=frame)
+
+
+def fcurves(idb):
+    ad = idb.animation_data
+    if not (ad and ad.action):
+        return []
+    out = []
+    for layer in getattr(ad.action, "layers", []):
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                out += list(bag.fcurves)
+    return out or list(getattr(ad.action, "fcurves", []) or [])
+
+
+def linear_all(idb):
+    for fc in fcurves(idb):
+        for kp in fc.keyframe_points:
+            kp.interpolation = "LINEAR"
+
+
+def value_node(nt, pairs, linear=True):
+    """A Value node animated through (frame, value) pairs."""
+    v = nt.nodes.new("ShaderNodeValue")
+    for f, x in pairs:
+        v.outputs[0].default_value = x
+        v.outputs[0].keyframe_insert("default_value", frame=f)
+    if linear:
+        linear_all(nt)
+    return v
+
+
+def math_node(nt, op, a, b=None, c=None):
+    m = nt.nodes.new("ShaderNodeMath")
+    m.operation = op
+    for i, x in enumerate((a, b, c)):
+        if x is None:
+            continue
+        if isinstance(x, (int, float)):
+            m.inputs[i].default_value = x
+        else:
+            nt.links.new(x, m.inputs[i])
+    return m.outputs[0]
+
+
+def scene_frames(name):
+    a, b, _ = T.SCENES[name]
+    return int(round((b - a) * T.FPS))
 
 
 def linear_keys(obj):

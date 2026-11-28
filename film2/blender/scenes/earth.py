@@ -2,6 +2,7 @@
 import math
 import bpy
 import common as C
+from common import T
 
 CYCLES = dict(volume_bounces=1, volume_step=2.0)
 R = 64.0      # Earth radius in scene units (1 unit = 100 km)
@@ -45,11 +46,22 @@ def build(sc):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=2000 * math.tan(C.deg(0.27)), segments=32, ring_count=16)
     sd = bpy.context.object; sd.data.materials.append(disc)
     cam_z = R + H
-    for f, el in [(1, -21.5), (96, -18.5)]:
+    n = C.scene_frames("earth")
+    dip = math.degrees(math.acos(R / cam_z))
+    crest = T.scene_frame("earth", T.SUN_CREST)
+
+    def el_at(f):
+        return -dip - 0.27 + (f - crest) / T.FPS * 0.25
+
+    for f, el in [(1, el_at(1)), (n, el_at(n))]:
         so.rotation_euler = (sun_rotation(el), 0, 0)
         so.keyframe_insert("rotation_euler", index=0, frame=f)
         sd.location = (0, 2000 * math.cos(C.deg(el)), cam_z + 2000 * math.sin(C.deg(el)))
         sd.keyframe_insert("location", frame=f)
+    C.linear_all(so); C.linear_all(sd)
+    e.rotation_euler = (0, 0, 0); e.keyframe_insert("rotation_euler", frame=1)
+    e.rotation_euler = (C.deg(-0.4), 0, 0); e.keyframe_insert("rotation_euler", frame=n)
+    C.linear_all(e)
     bg = sc.world.node_tree.nodes["Background"]
     bg.inputs["Color"].default_value = (1, 1, 1, 1)
     sky = sc.world.node_tree
@@ -58,5 +70,8 @@ def build(sc):
     cr3.inputs["To Min"].default_value = 0.6; cr3.inputs["To Max"].default_value = 0.0
     sky.links.new(st.outputs["Distance"], cr3.inputs["Value"])
     sky.links.new(cr3.outputs[0], bg.inputs["Strength"])
-    dip = math.degrees(math.acos(R / cam_z))
-    C.camera(sc, (0, 0, cam_z), (0, 100, cam_z - 100 * math.tan(C.deg(dip - 4))), lens=28)
+    cam = C.camera(sc, (0, 0, cam_z), (0, 100, cam_z - 100 * math.tan(C.deg(dip - 4))), lens=28)
+    C.key(cam, 1, rotation_euler=tuple(cam.rotation_euler))
+    r2 = cam.rotation_euler.copy(); r2.z += C.deg(1.5)
+    C.key(cam, n, rotation_euler=tuple(r2))
+    C.linear_all(cam)

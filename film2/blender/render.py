@@ -16,6 +16,8 @@ ap.add_argument("--res", default="1920x1080")
 ap.add_argument("--samples", type=int, default=128)
 ap.add_argument("--threads", type=int, default=0)
 ap.add_argument("--engine", default="cycles", choices=["cycles", "eevee"])
+ap.add_argument("--codec", default="ZIP", choices=["ZIP", "DWAA", "PIZ"])
+ap.add_argument("--resume", action="store_true")
 a = ap.parse_args()
 
 mod = importlib.import_module("scenes." + a.scene)
@@ -26,6 +28,7 @@ if a.engine == "cycles":
 else:
     common.eevee(sc, res, a.samples)
 mod.build(sc)
+sc.render.image_settings.exr_codec = a.codec
 if a.threads:
     sc.render.threads_mode = "FIXED"
     sc.render.threads = a.threads
@@ -34,6 +37,8 @@ os.makedirs(a.out, exist_ok=True)
 for f in range(int(f0), int(f1 or f0) + 1):
     sc.frame_set(f)
     sc.render.filepath = os.path.join(a.out, "%s_%s_%04d.exr" % (a.scene, a.engine, f))
+    if a.resume and os.path.exists(sc.render.filepath):
+        continue
     t = time.time()
     bpy.ops.render.render(write_still=True)
     print(json.dumps({"scene": a.scene, "frame": f, "seconds": round(time.time() - t, 1), "res": a.res,

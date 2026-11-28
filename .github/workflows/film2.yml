@@ -1,7 +1,7 @@
 name: film2
-# Renders for the second film. M0: one 1080p frame per scene and engine, with the time each took,
-# and a check of the stock clips. Results are uploaded as short-lived artifacts (no release).
-# Runs only when film2/render.json changes, so ordinary commits do not start an hour of rendering.
+# Renders film II on GitHub's runners: the scenes are split into chunks of frames (plan.py), rendered in parallel,
+# then assembled with the stock clips and the mix into HDR10 and SDR files. Results are short-lived artifacts (no release).
+# Runs only when film2/render.json changes, so ordinary commits do not start an hour or more of rendering.
 on:
   push:
     branches: [film2]
@@ -13,17 +13,28 @@ concurrency:
   group: film2-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  timing:
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    outputs:
+      matrix: ${{ steps.p.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        run: echo "matrix=$(python3 film2/plan.py film2/render.json)" >> "$GITHUB_OUTPUT"
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
     strategy:
       fail-fast: false
-      matrix:
-        scene: [echo, storm, canyon, earth, shatter, title]
-        engine: [cycles, eevee]
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     env:
       SCENE: ${{ matrix.scene }}
       ENGINE: ${{ matrix.engine }}
+      FRAMES: ${{ matrix.frames }}
+      RES: ${{ matrix.res }}
+      SAMPLES: ${{ matrix.samples }}
+      CODEC: ${{ matrix.codec }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,34 +44,63 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y -q --no-install-recommends fonts-inter libegl1 libgl1 libglx-mesa0 libgl1-mesa-dri \
             libxi6 libxkbcommon0 libxxf86vm1 libxfixes3 libxrender1 libsm6
-      - run: pip install -q bpy==5.3.0 OpenEXR numpy Pillow
-      - name: Render one 1080p frame
+      - run: pip install -q bpy==5.3.0 OpenEXR numpy
+      - name: Render
         run: |
           mkdir -p out
-          { nproc; grep -m1 'model name' /proc/cpuinfo; } > "out/host-$SCENE-$ENGINE.txt"
-          case "$SCENE" in storm) f=20 ;; shatter) f=9 ;; echo) f=22 ;; earth) f=60 ;; *) f=12 ;; esac
-          s=128; [ "$ENGINE" = eevee ] && s=64
-          python3 film2/blender/render.py "$SCENE" --engine "$ENGINE" --frames "$f" --samples "$s" --out out \
-            | grep '"seconds"' | tee "out/timing-$SCENE-$ENGINE.jsonl"
-          python3 film2/tools/exr_preview.py "out/preview-$SCENE-$ENGINE.png" out/*.exr
+          python3 film2/blender/render.py "$SCENE" --engine "$ENGINE" --frames "$FRAMES" --res "$RES" \
+            --samples "$SAMPLES" --codec "$CODEC" --out out | grep '"seconds"' | tee "out/timing-$SCENE-${FRAMES%%:*}.jsonl"
       - uses: actions/upload-artifact@v4
         with:
-          name: m0-${{ matrix.scene }}-${{ matrix.engine }}
+          name: frames-${{ matrix.id }}
           path: out/
-          retention-days: 7
-  stock:
+          retention-days: 5
+  audio:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg && pip install -q numpy
-      - name: Fetch and check the stock clips
-        run: python3 film2/tools/fetch_stock.py film2/stock.json --out stock
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - run: pip install -q numpy scipy dawdreamer
+      - run: python3 film2/sound/mix.py mix.wav | tee mix-report.txt
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: m0-stock-report
+          name: mix
           path: |
-            stock/*.jpg
-            stock/report.json
+            mix.wav
+            mix-report.txt
+          retention-days: 5
+  assemble:
+    needs: [render, audio]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg && pip install -q numpy opencv-python-headless OpenEXR Pillow
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: frames-*
+          path: frames
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: mix
+          path: .
+      - name: Fetch the stock clips the timeline uses
+        run: |
+          ids=$(python3 -c "import sys; sys.path.insert(0, 'film2'); import timeline as T; print(' '.join(str(s[1]) for s in T.STOCK))")
+          # shellcheck disable=SC2086
+          python3 film2/tools/fetch_stock.py film2/stock.json --out stock --only $ids
+      - name: Assemble
+        run: |
+          mkdir -p film
+          python3 film2/assemble.py --frames frames --stock stock --audio mix.wav --out film/sdht-film2-m1
+          cat frames/timing-*.jsonl > film/render-timing.jsonl
+          cp mix-report.txt film/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: film2-m1
+          path: film/
           retention-days: 7

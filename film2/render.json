@@ -1,1 +1,8 @@
-{"milestone": "M0", "note": "change this file to start a render run"}
+{
+  "milestone": "M1",
+  "note": "Changing this file starts a render run on CI (.github/workflows/film2.yml).",
+  "res": "960x540",
+  "samples": {"eevee": 16, "cycles": 16},
+  "chunk": {"eevee": 96, "cycles": 60},
+  "codec": "DWAA"
+}

@@ -67,9 +67,10 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("manifest")
     ap.add_argument("--out", default="stock")
+    ap.add_argument("--only", type=int, nargs="*")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    clips = json.load(open(a.manifest))["clips"]
+    clips = [c for c in json.load(open(a.manifest))["clips"] if not a.only or c["id"] in a.only]
     report, bad = [], 0
     for c in clips:
         path = os.path.join(a.out, "%d.mp4" % c["id"])
