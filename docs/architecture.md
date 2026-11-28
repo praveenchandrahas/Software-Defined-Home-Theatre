@@ -136,7 +136,7 @@ again with a recording. That loop is how every preset and the alignment table we
 | Item | Notes |
 |------|-------|
 | Computer | TIMI Mi NoteBook Ultra (Intel Core i5-11300H, 15.4 GB RAM, Intel Iris Xe graphics), running Kubuntu 24.04 (Ubuntu 24.04.5 LTS, kernel 7.0.0-38-generic, KDE Plasma on Wayland). It is the author's everyday laptop, not a dedicated media PC; a desktop is planned. |
-| Video | BenQ W1070 (primary display, 1080p DLP) on a 107" DIY screen (gypsum board with matte paint), 16:9. Two sources: this laptop, and a Fire Stick 4K Max (1st gen) through a TD-876H HDMI to optical splitter, whose TOSLINK feeds the Z906. Video is not otherwise covered by this repo. |
+| Video | BenQ W1070 (primary display, 1080p DLP) on a DIY screen (gypsum board with matte paint), 16:9, with a 104" picture area. Two sources: this laptop, and a Fire Stick 4K Max (1st gen) through a TD-876H HDMI to optical splitter, whose TOSLINK feeds the Z906. Video is not otherwise covered by this repo. |
 | Interface | Vantec 7.1 USB (C-Media, USB id 0d8c); PipeWire sink `alsa_output.usb-0d8c_USB_Sound_Device-00.analog-surround-71` |
 | Bed speakers | Logitech Z906 (5 satellites + sub, analog direct inputs, its own bass management). **Sub level and the knob positions are kept fixed** (see [runbook.md](runbook.md)). |
 | Heights | Two Samsung SWA-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired) on the ceiling, driven from the interface's rear outputs by a Salcon Class-D 2 x 50 W amplifier, no subwoofer |

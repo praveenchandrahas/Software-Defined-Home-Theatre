@@ -3,7 +3,7 @@
 ![Software-Defined Home Theatre: the four parts of the project (mpv-object-audio, linux-theater-dsp, Roomtone, and the supporting utilities mpv-shelf and seekthumbs) around a 5.1.2 room. Illustrative artwork, not a photograph or a measurement.](img/cover.png)
 
 **At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
-two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
+two ceiling speakers play them, and a projector shows the picture on a DIY screen with a 104 inch picture area. There is no AV receiver: CamillaDSP on the laptop does the
 EQ, delays and trims, and the amplifiers only amplify.
 
 **For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log and a set of open tools; pre-release, experimental and used on one rig, not a finished product.

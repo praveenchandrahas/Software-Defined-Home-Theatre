@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-11-28
+- **Docs: screen size.** The picture area is 104 inch (the author); the 107 inch recorded before counted the border. README, home page, architecture and write-up corrected.
 - **New: the intro film, "A file becomes a room" ([docs/intro.md](docs/intro.md), source in `intro/`).** 60 seconds, HDR10 and SDR; labelled sections for shadow detail, object panning, a scope-to-16:9 opening, height channels, the Rec.709 gamut, HDR10 tone mapping and dynamics; a synthetic voice-over (Kokoro-82M); 5.1.2 audio pre-rendered with Spatial-Lab's VBAP engine, a rig test file and a story. Checked by measuring the built files; not yet watched, listened to or played on the rig. Video files are built from source, not committed.
 - **Docs:** README, home and repos pages, Spatial-Lab page, status, roadmap and decisions (D19) updated.
 

@@ -8,7 +8,7 @@
 **Full docs site (all seven repositories, cross-linked): https://praveenchandrahas.github.io/Software-Defined-Home-Theatre/** — this README stays as the GitHub-facing copy; the content is the same, reused rather than duplicated by hand.
 
 **At a glance.** A Linux laptop decodes Dolby Atmos files live and renders the objects to a 5.1.2 speaker layout; a Logitech Z906 plus
-two ceiling speakers play them, and a projector shows the picture on a DIY 107 inch screen. There is no AV receiver: CamillaDSP on the laptop does the
+two ceiling speakers play them, and a projector shows the picture on a DIY screen with a 104 inch picture area. There is no AV receiver: CamillaDSP on the laptop does the
 EQ, delays and trims, and the amplifiers only amplify.
 **For:** people building a similar Linux Atmos setup, or checking how it was tuned. This is a build log and a set of open tools; pre-release, experimental and used on one rig, not a finished product.
 **Needs:** Kubuntu 24.04, PipeWire, CamillaDSP, the Omniphony engine with harletty-bridge, an mpv built with the mpv-omniphony patches, and a 7.1 USB interface (details under [Quick start](#quick-start-on-a-new-machine)).
@@ -110,7 +110,7 @@ The path of a film, from file to ears:
 | Audio interface | Vantec 7.1 USB (C-Media class), analog 7.1 mode, 8 outputs |
 | Bed speakers | Logitech Z906: front L/R, centre, two surrounds, sub |
 | Height speakers | Two Samsung SWA-8500S speakers (the wireless surrounds of a Samsung HW-T670 soundbar system, now wired), on the ceiling, Salcon Class-D 2 x 50 W amplifier, no sub |
-| Projector and screen | BenQ W1070; 107 inch 16:9 screen from sanded, sprayed gypsum board with a matte black painted border, later extended with a 4 inch black velvet border |
+| Projector and screen | BenQ W1070; 16:9 screen with a 104 inch picture area (recorded earlier as 107 inch, which counted the border), from sanded, sprayed gypsum board with a matte black painted border, later extended with a 4 inch black velvet border |
 | Measurement | Dayton iMM-6S microphone on a separate USB adapter, Room EQ Wizard |
 | On hold | Custom subwoofer (JBL A1500HI, 75 L vented): not in the signal chain |
 
