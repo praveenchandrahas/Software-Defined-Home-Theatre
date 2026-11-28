@@ -1,0 +1,65 @@
+name: film2
+# Renders for the second film. M0: one 1080p frame per scene and engine, with the time each took,
+# and a check of the stock clips. Results are uploaded as short-lived artifacts (no release).
+on:
+  push:
+    branches: [film2]
+    paths: ["film2/**", ".github/workflows/film2.yml"]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: film2-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        scene: [echo, storm, canyon, earth, shatter, title]
+        engine: [cycles, eevee]
+    env:
+      SCENE: ${{ matrix.scene }}
+      ENGINE: ${{ matrix.engine }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13"}
+      - name: System libraries for Blender (software OpenGL for Eevee)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends fonts-inter libegl1 libgl1 libglx-mesa0 libgl1-mesa-dri \
+            libxi6 libxkbcommon0 libxxf86vm1 libxfixes3 libxrender1 libsm6
+      - run: pip install -q bpy==5.3.0 OpenEXR numpy Pillow
+      - name: Render one 1080p frame
+        run: |
+          mkdir -p out
+          { nproc; grep -m1 'model name' /proc/cpuinfo; } > "out/host-$SCENE-$ENGINE.txt"
+          case "$SCENE" in storm) f=20 ;; shatter) f=9 ;; echo) f=22 ;; earth) f=60 ;; *) f=12 ;; esac
+          s=128; [ "$ENGINE" = eevee ] && s=64
+          python3 film2/blender/render.py "$SCENE" --engine "$ENGINE" --frames "$f" --samples "$s" --out out \
+            | grep '"seconds"' | tee "out/timing-$SCENE-$ENGINE.jsonl"
+          python3 film2/tools/exr_preview.py "out/preview-$SCENE-$ENGINE.png" out/*.exr
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m0-${{ matrix.scene }}-${{ matrix.engine }}
+          path: out/
+          retention-days: 7
+  stock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg && pip install -q numpy
+      - name: Fetch and check the stock clips
+        run: python3 film2/tools/fetch_stock.py film2/stock.json --out stock
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m0-stock-report
+          path: |
+            stock/*.jpg
+            stock/report.json
+          retention-days: 7

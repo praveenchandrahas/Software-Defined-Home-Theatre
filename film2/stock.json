@@ -1,0 +1,11 @@
+{
+  "note": "Candidate stock clips (Pexels License). Only this list is in the repository; the clips are downloaded at build time. sha256 is filled in after the first download.",
+  "clips": [
+    {"id": 16478161, "use": "water", "page": "https://www.pexels.com/video/water-droplets-are-falling-from-the-sky-and-into-the-water-16478161/", "by": "Film Composite"},
+    {"id": 16392053, "use": "water", "page": "https://www.pexels.com/video/a-close-up-of-a-water-drop-in-a-bowl-16392053/", "by": "Film Composite"},
+    {"id": 9667531, "use": "water", "page": "https://www.pexels.com/video/close-up-shot-of-water-droplets-falling-onto-a-calm-water-9667531/", "by": "cottonbro studio"},
+    {"id": 9711025, "use": "lightning", "page": "https://www.pexels.com/video/lightning-strikes-at-night-9711025/", "by": "Jose Gabriel Ortega Castro"},
+    {"id": 31701090, "use": "lightning", "page": "https://www.pexels.com/video/dramatic-lightning-storm-at-night-31701090/", "by": "Mir Burhan"},
+    {"id": 3052162, "use": "lightning", "page": "https://www.pexels.com/video/rain-and-lightning-from-the-dark-sky-at-night-3052162/", "by": "Ricky Esquivel"}
+  ]
+}
