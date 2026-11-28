@@ -18,6 +18,7 @@ ap.add_argument("--threads", type=int, default=0)
 ap.add_argument("--engine", default="cycles", choices=["cycles", "eevee"])
 ap.add_argument("--codec", default="ZIP", choices=["ZIP", "DWAA", "PIZ"])
 ap.add_argument("--resume", action="store_true")
+ap.add_argument("--gpu", choices=["optix", "cuda"], help="render Cycles on NVIDIA GPUs")
 a = ap.parse_args()
 
 mod = importlib.import_module("scenes." + a.scene)
@@ -28,6 +29,17 @@ if a.engine == "cycles":
 else:
     common.eevee(sc, res, a.samples)
 mod.build(sc)
+if a.gpu and a.engine == "cycles":
+    prefs = bpy.context.preferences.addons["cycles"].preferences
+    prefs.compute_device_type = a.gpu.upper()
+    prefs.get_devices()
+    used = [d.name for d in prefs.devices if d.type == a.gpu.upper()]
+    for d in prefs.devices:
+        d.use = d.type == a.gpu.upper()
+    if not used:
+        sys.exit("no %s device found" % a.gpu.upper())
+    sc.cycles.device = "GPU"
+    print(json.dumps({"gpu": a.gpu, "devices": used}), flush=True)
 sc.render.image_settings.exr_codec = a.codec
 if a.threads:
     sc.render.threads_mode = "FIXED"
