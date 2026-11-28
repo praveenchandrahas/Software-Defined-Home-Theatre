@@ -215,11 +215,11 @@ def draw_gamut(buf, t):
     cols = [("R", (1, 0, 0)), ("G", (0, 1, 0)), ("B", (0, 0, 1)), ("C", (0, 1, 1)), ("M", (1, 0, 1)), ("Y", (1, 1, 0)), ("W", (1, 1, 1))]
     k = sm(31.8, 32.8, t) * a
     for i, (nm, c) in enumerate(cols):
-        x = 1220 + (i % 4) * 135
+        x = 1340 + (i % 4) * 135
         y = 560 + (i // 4) * 150
         buf[y:y + 100, x:x + 110] = np.array(c, np.float32) * 60 * k
         put_text(buf, nm, 22, x + 55, y + 122, 45 * k)
-    put_text(buf, "Rec.709 primaries and mixes", 28, 1220, 505, 70 * k, anchor="l")
+    put_text(buf, "Rec.709 primaries and mixes", 28, 1340, 505, 70 * k, anchor="l")
 
 
 _LOCUS = _cie_xy()
