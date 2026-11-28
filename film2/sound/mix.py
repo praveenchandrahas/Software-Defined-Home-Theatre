@@ -5,6 +5,7 @@ usage: python3 mix.py OUT.wav        (8 channels, 24-bit, 48 kHz, 7.1 file order
 """
 import sys
 import numpy as np
+from scipy import signal
 from dsp import (T, FS, N, IDX, LFE, bus, tt, env, expdecay, filt, noise, pink, place, direct, doppler, bell, saw,
                  thump, pad, room, short_term_max, true_peak_db, to_file_order, write24, rng)
 
@@ -107,7 +108,7 @@ def thunder(b, t0, az, el):
         return T.polar(az + (target - az) * k * 0.8, el + (75 - el) * np.sin(np.pi * min(k, 1.0)) * 0.6, 3.0)
 
     place(b, roll, t0 + 0.12, path, 1.0, spread=40)
-    lfe(b, filt(noise(d), "low", 70, 4) * am * expdecay(n, 1.6) * 3.0, t0 + 0.1, 1.0)
+    lfe(b, filt(noise(d), "bandpass", [46, 58], 2) * am * expdecay(n, 1.6) * 4.0, t0 + 0.1, 1.0)
 
 
 def s_storm():
@@ -130,7 +131,7 @@ def s_drop():
     f = 900 + 900 * (1 - np.exp(-t * 40))
     plink = np.sin(2 * np.pi * np.cumsum(f) / FS) * np.exp(-t * 9) * env(len(t), 0.001, 0.2)
     direct(b, plink, h, ["C"], 0.5)
-    body = thump(90, 40, 2.4, 6, 1.4)
+    body = thump(90, 50, 2.4, 6, 1.4)
     direct(b, body, h, ["C"], 0.5)
     lfe(b, body, h, 1.0)
     send = np.zeros(N)
@@ -162,7 +163,7 @@ def s_canyon():
     t0, t1 = T.CANYON_ENTRY, T.SCENES["canyon"][1]
     d = t1 - t0
     # entry: a hit and a rush of air
-    lfe(b, thump(80, 42, 1.6, 5, 1.8), t0, 1.0)
+    lfe(b, thump(80, 50, 1.6, 5, 1.8), t0, 1.0)
     direct(b, thump(120, 60, 0.8, 8, 4), t0, ["C"], 0.4)
     for nm in ["FL", "FR", "SL", "SR", "TFL", "TFR"]:
         wind = filt(pink(d), "bandpass", [180, 4500], 2) * env(int(d * FS), 0.05, 0.6)
@@ -187,7 +188,7 @@ def s_canyon():
         x = filt(pink(sw), "bandpass", [300, 9000], 2) * np.linspace(0, 1, int(sw * FS)) ** 2
         direct(b, x * env(len(x), 0.01, 0.6), o0, [nm], 0.16)
     pad(b, o0, sw + 0.4, [146.83, 220.0, 293.66, 369.99], ["FL", "FR", "SL", "SR", "TFL", "TFR"], 0.22, 1.2, 0.8, 4000, 0.5)
-    lfe(b, np.sin(2 * np.pi * np.cumsum(38 + 20 * tt(sw) / sw) / FS) * np.linspace(0, 1, int(sw * FS)) ** 2, o0, 0.8)
+    lfe(b, np.sin(2 * np.pi * np.cumsum(47 + 9 * tt(sw) / sw) / FS) * np.linspace(0, 1, int(sw * FS)) ** 2, o0, 0.8)
     b[int((t1 + 0.15) * FS):] = 0
     fade = np.ones(N); i = int((t1 - 0.5) * FS); j = int((t1 + 0.15) * FS)
     fade[i:j] = np.linspace(1, 0, j - i); fade[j:] = 0
@@ -230,7 +231,7 @@ def s_hit():
     imp = filt(noise(1.2), "low", 2500, 2) * expdecay(int(1.2 * FS), 0.12)
     for nm in ["FL", "FR", "C", "TFL", "TFR"]:
         direct(b, imp, h, [nm], 0.5)
-    drop = np.sin(2 * np.pi * np.cumsum(38 + 34 * np.exp(-tt(2.5) * 1.6)) / FS) * env(int(2.5 * FS), 0.005, 0.6)
+    drop = np.sin(2 * np.pi * np.cumsum(48 + 30 * np.exp(-tt(2.5) * 1.6)) / FS) * env(int(2.5 * FS), 0.005, 0.6)
     lfe(b, drop, h, 1.0)
     # debris flying out past the listener
     for k in range(140):
@@ -244,7 +245,7 @@ def s_hit():
     # thumps: an 808 in the sub and centre, a slap that walks round the room
     order = ["FL", "FR", "SR", "SL", "TFL", "TFR"]
     for k, t in enumerate(T.THUMPS):
-        kick = thump(95, 46, 0.6, 9, 4.5)
+        kick = thump(95, 50, 0.6, 9, 4.5)
         lfe(b, kick, t, 0.9)
         direct(b, kick, t, ["C"], 0.35)
         direct(b, filt(noise(0.08), "bandpass", [600, 4000], 2) * expdecay(int(0.08 * FS), 0.015), t, [order[k % 6]], 0.35)
@@ -273,6 +274,19 @@ def s_ticks():
     return b
 
 
+# The room, from the rattle sweep (2026-11-28): a cabinet in the room buzzes at 60-67 Hz even at -21 dBFS in the LFE;
+# the sub's cabinet buzzes at 30-38 Hz from -15 dBFS and up to 45 Hz from -9 dBFS. Clean at every level tried:
+# 47-57 Hz and 71-99 Hz. So the low end is built there: a notch at 63.6 Hz on everything, and the LFE high-passed at 45 Hz.
+RATTLE_HZ = 63.6
+SUB_FLOOR_HZ = 45.0
+
+
+def protect(x):
+    b, a = signal.iirnotch(RATTLE_HZ, 2.5, FS)
+    y = signal.filtfilt(b, a, x, axis=0)
+    return y
+
+
 # (function, window to measure, target short-term LUFS, LFE peak dBFS or None)
 PLAN = [(s_open, (2.5, 8.5), -44.0, None), (s_echo, (8.0, 18.0), -29.0, None), (s_rain, (18.0, 36.0), -25.0, None),
         (s_storm, (30.0, 42.0), -19.0, -9.0), (s_drop, (45.5, 50.0), -27.0, -10.0), (s_canyon, (50.0, 65.0), -18.0, -8.0),
@@ -293,6 +307,9 @@ def build():
             b[:, LFE] = filt(l, "high", 28, 4) * (10 ** (lfe_peak / 20) / np.max(np.abs(l)))
         mix += b
         report.append((fn.__name__, target, round(20 * np.log10(g), 1)))
+    mix = protect(mix)
+    mix[:, LFE] = filt(mix[:, LFE], "high", SUB_FLOOR_HZ, 4)
+    mix[:, LFE] *= 10 ** (-6 / 20) / np.max(np.abs(mix[:, LFE]))      # the filters took some level: back to -6 dBFS peak
     # digital zero where the film says so
     for a, c in [(0.0, T.TICK_L - 0.01), (T.CUT_TO_BLACK, T.DROP_FALL[0]), T.SILENCE, (T.LIGHT_OUT, T.TICK_R - 0.01),
                  (T.TICK_R + 0.2, T.DUR)]:
