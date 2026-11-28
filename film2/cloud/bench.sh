@@ -15,7 +15,7 @@ uv venv -q -p 3.13 .venv
 uv pip install -q --python .venv/bin/python bpy==5.3.0 OpenEXR numpy
 PY=.venv/bin/python
 gpu=optix
-$PY blender/render.py echo --gpu optix --frames 60 --res 320x180 --samples 4 --out /tmp/warm 2>&1 | grep -E '"gpu"|no OPTIX' || gpu=cuda
+$PY blender/render.py echo --gpu optix --frames 60 --res 320x180 --samples 4 --out /tmp/warm 2>&1 | grep '"gpu"' || gpu=cuda
 echo "device: $gpu (first frame includes kernel loading)"
 for s in echo:60 storm:26 drop:100 canyon:200 earth:121 shatter:40 title:150; do
   $PY blender/render.py "${s%%:*}" --engine cycles --gpu "$gpu" --frames "${s##*:}" --res 1920x1080 --samples 256 --out /tmp/bench \
