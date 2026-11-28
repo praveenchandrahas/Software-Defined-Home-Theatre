@@ -15,3 +15,5 @@ for name, (a, b, engine) in T.SCENES.items():
         jobs.append({"scene": name, "engine": engine, "frames": "%d:%d" % (f0, f1), "id": "%s-%04d" % (name, f0),
                      "res": cfg["res"], "samples": cfg["samples"][engine], "codec": cfg.get("codec", "ZIP")})
 print(json.dumps({"include": jobs}))
+if cfg.get("reuse_run"):
+    print("frames come from run %s; no rendering" % cfg["reuse_run"], file=sys.stderr)

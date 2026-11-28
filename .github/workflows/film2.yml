@@ -9,6 +9,7 @@ on:
   workflow_dispatch: {}
 permissions:
   contents: read
+  actions: read            # to reuse the frames of an earlier run (render.json: "reuse_run")
 concurrency:
   group: film2-${{ github.ref }}
   cancel-in-progress: true
@@ -17,12 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.p.outputs.matrix }}
+      reuse: ${{ steps.p.outputs.reuse }}
     steps:
       - uses: actions/checkout@v4
       - id: p
-        run: echo "matrix=$(python3 film2/plan.py film2/render.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "matrix=$(python3 film2/plan.py film2/render.json)" >> "$GITHUB_OUTPUT"
+          echo "reuse=$(jq -r '.reuse_run // ""' film2/render.json)" >> "$GITHUB_OUTPUT"
   render:
     needs: plan
+    if: needs.plan.outputs.reuse == ''
     runs-on: ubuntu-latest
     timeout-minutes: 300
     strategy:
@@ -71,7 +76,8 @@ jobs:
             mix-report.txt
           retention-days: 5
   assemble:
-    needs: [render, audio]
+    needs: [plan, render, audio]
+    if: always() && needs.audio.result == 'success' && (needs.render.result == 'success' || needs.render.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -80,10 +86,19 @@ jobs:
         with: {python-version: "3.13"}
       - run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends ffmpeg && pip install -q numpy opencv-python-headless OpenEXR Pillow
       - uses: actions/download-artifact@v4
+        if: needs.plan.outputs.reuse == ''
         with:
           pattern: frames-*
           path: frames
           merge-multiple: true
+      - uses: actions/download-artifact@v4
+        if: needs.plan.outputs.reuse != ''
+        with:
+          pattern: frames-*
+          path: frames
+          merge-multiple: true
+          run-id: ${{ needs.plan.outputs.reuse }}
+          github-token: ${{ github.token }}
       - uses: actions/download-artifact@v4
         with:
           name: mix

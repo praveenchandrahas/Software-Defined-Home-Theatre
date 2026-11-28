@@ -20,10 +20,6 @@ def lfe(b, x, t0, gain):
 # ------------------------------------------------------------------ 0-8 s: black
 def s_open():
     b = bus()
-    n = int(0.12 * FS)
-    tick = filt(noise(0.12), "bandpass", [1800, 5200], 2) * expdecay(n, 0.006)
-    tick += 0.6 * np.sin(2 * np.pi * 920 * tt(0.12)) * expdecay(n, 0.03)
-    direct(b, tick, T.TICK_L, ["TFL"], 0.5)
     a0, a1 = T.AIR
     air = filt(pink(a1 - a0), "bandpass", [300, 3000], 2) * env(int((a1 - a0) * FS), 1.5, 1.2)
     place(b, air, a0, lambda t: T.polar(-60 + 50 * (t - a0), 25, 2.4), 1.0, spread=30)
@@ -264,32 +260,42 @@ def s_title():
     pad(b, t0, d, [110.0, 164.81, 220.0, 277.18, 329.63, 440.0], ["FL", "FR", "C", "SL", "SR", "TFL", "TFR"], 0.2, 2.5, 0.02, 3200, 0.4)
     lfe(b, np.sin(2 * np.pi * 55 * tt(d)) * env(int(d * FS), 3.0, 0.02), t0, 0.25)
     b[int(T.LIGHT_OUT * FS):] = 0                           # lights out: the sound goes with them
+    return b
+
+
+def s_ticks():
+    """The first and last sound: one small tick in each ceiling speaker, at a fixed level (peak -24 dBFS)."""
+    b = bus()
     n = int(0.12 * FS)
-    tick = filt(noise(0.12), "bandpass", [1800, 5200], 2) * expdecay(n, 0.006) + 0.6 * np.sin(2 * np.pi * 980 * tt(0.12)) * expdecay(n, 0.03)
-    direct(b, tick, T.TICK_R, ["TFR"], 0.5)
+    for t0, name, f in [(T.TICK_L, "TFL", 920), (T.TICK_R, "TFR", 980)]:
+        tick = filt(noise(0.12), "bandpass", [1800, 5200], 2) * expdecay(n, 0.006) + 0.6 * np.sin(2 * np.pi * f * tt(0.12)) * expdecay(n, 0.03)
+        direct(b, tick / np.max(np.abs(tick)) * 10 ** (-24 / 20), t0, [name])
     return b
 
 
 # (function, window to measure, target short-term LUFS, LFE peak dBFS or None)
 PLAN = [(s_open, (2.5, 8.5), -44.0, None), (s_echo, (8.0, 18.0), -29.0, None), (s_rain, (18.0, 36.0), -25.0, None),
         (s_storm, (30.0, 42.0), -19.0, -9.0), (s_drop, (45.5, 50.0), -27.0, -10.0), (s_canyon, (50.0, 65.0), -18.0, -8.0),
-        (s_orbit, (65.0, 75.0), -30.0, None), (s_hit, (77.8, 90.0), -12.0, -6.0), (s_title, (90.0, 98.0), -25.0, -20.0)]
+        (s_orbit, (65.0, 75.0), -30.0, None), (s_hit, (77.8, 90.0), -12.0, -6.0), (s_title, (90.0, 98.0), -25.0, -20.0),
+        (s_ticks, None, None, None)]
 
 
 def build():
     mix = np.zeros((N, 8))
     report = []
-    for fn, (a, c), target, lfe_peak in PLAN:
+    for fn, win, target, lfe_peak in PLAN:
+        a, c = win or (0, 0)
         b = fn()
         l = b[:, LFE].copy(); b[:, LFE] = 0
-        g = 10 ** ((target - short_term_max(b, a, c)) / 20)
+        g = 1.0 if target is None else 10 ** ((target - short_term_max(b, a, c)) / 20)
         b *= g
         if lfe_peak is not None and np.max(np.abs(l)) > 0:
             b[:, LFE] = filt(l, "high", 28, 4) * (10 ** (lfe_peak / 20) / np.max(np.abs(l)))
         mix += b
         report.append((fn.__name__, target, round(20 * np.log10(g), 1)))
     # digital zero where the film says so
-    for a, c in [(0.0, T.TICK_L - 0.01), (T.CUT_TO_BLACK, T.DROP_FALL[0]), T.SILENCE, (T.LIGHT_OUT, T.TICK_R - 0.01)]:
+    for a, c in [(0.0, T.TICK_L - 0.01), (T.CUT_TO_BLACK, T.DROP_FALL[0]), T.SILENCE, (T.LIGHT_OUT, T.TICK_R - 0.01),
+                 (T.TICK_R + 0.2, T.DUR)]:
         mix[int(a * FS):int(c * FS)] = 0
     tp = true_peak_db(mix)
     if tp > -3.0:
