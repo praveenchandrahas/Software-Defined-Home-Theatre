@@ -1,10 +1,11 @@
 name: film2
 # Renders for the second film. M0: one 1080p frame per scene and engine, with the time each took,
 # and a check of the stock clips. Results are uploaded as short-lived artifacts (no release).
+# Runs only when film2/render.json changes, so ordinary commits do not start an hour of rendering.
 on:
   push:
     branches: [film2]
-    paths: ["film2/**", ".github/workflows/film2.yml"]
+    paths: ["film2/render.json"]
   workflow_dispatch: {}
 permissions:
   contents: read
