@@ -18,6 +18,8 @@ Ordered by payoff for effort. Nothing here is required for the system to work.
 | Finish proving Spatial-Lab on the rig | It has made real sound on the rig (reported 2026-11-16); still to do: confirm the channel map after the 0.1.1 fix with its Identify mode, a recorded Direct against Through comparison | Vantec connected; correct USB sink name in its layout file; ceiling raised in steps from -40 dBFS; measured surround and height distances |
 | Spatial-Lab: check by microphone, and optionally against Omniphony's own object test | Its image directions are predictions; the author deferred mic verification | Roomtone's mic and analysers; Omniphony's OSC `object_test` for the A/B |
 | Spatial-Lab and Roomtone share one layout file | Two layout files must be kept in step by hand | Decide which format wins (Roomtone's `layout.yml` has the GUI) |
+| Play the [intro film](intro.md) on the rig | Built and measured as files only | Rig test file first, then watch and listen; adjust levels |
+| Intro film with true objects (optional, not started) | The current track is pre-rendered for 5.1.2 only | An object format the player chain accepts; see D19 |
 | Documentation for the next room | A larger room later would be a clean second build | This repo as the template |
 
 Deliberately not planned: a night or low-volume preset (late-night viewing moves to the family TV and soundbar, see D13), rear or extra height speakers in the current room (see D1), multi-seat averaging (tuned for one seat).

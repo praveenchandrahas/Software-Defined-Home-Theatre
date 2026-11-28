@@ -43,6 +43,10 @@ python3 -m spatial_lab serve --open
 
 `python3 -m spatial_lab serve --backend null` runs everything silently, for trying the page without the rig. `render` writes an 8-channel WAV, one WAV per speaker and a plot, playing nothing. Needs `python3-numpy python3-scipy python3-aiohttp python3-yaml ffmpeg pipewire-bin`. Its tests run with `scripts/test-all.sh` (they need pytest).
 
+## Reused elsewhere
+
+[The intro film](intro.md) pans its sounds offline with this project's VBAP engine (`vbap.py`, copied into `intro/`; the copy does not update itself).
+
 ## Known gaps
 
 - The USB sink name in its layout file did not match the author's machine at the first check because the interface was not connected; it must be confirmed with the interface present.

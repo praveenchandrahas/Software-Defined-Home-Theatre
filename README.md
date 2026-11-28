@@ -56,7 +56,7 @@ It is one project in seven repositories (split from a single repository on 2026-
 
 | Repository | What it is |
 |---|---|
-| **[sdht](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts |
+| **[sdht](https://github.com/praveenchandrahas/Software-Defined-Home-Theatre)** (this one) | documentation, build log, measurements' results and graphs, `preflight` health report, `clone-all.sh` / `test-all.sh` / `check-installed.sh`, the figure scripts, the intro film's source |
 | **[linux-theater-dsp](https://github.com/praveenchandrahas/linux-theater-dsp)** | `eq` / `theater-route` (PipeWire routing), `set-eq.py` (CamillaDSP profiles: bass EQ, delays, trims, bass management), the stereo and 5.1-bed upmixers (`upmix.py`), the adaptive ambience engine (`upmix_engine.py`) with its offline test harness (`tools/upmixtest`), the systemd units, router tests |
 | **[mpv-object-audio](https://github.com/praveenchandrahas/mpv-object-audio)** | installer and wrapper for the live Atmos / DTS:X player (Omniphony, harletty-bridge, patched mpv) |
 | **[seekthumbs](https://github.com/praveenchandrahas/seekthumbs)** | seek-bar thumbnails for a read-only film library (an rclone or debrid mount): built when you play a film, as a batch, or from a local web page where you tick the films and start, pause and stop; one set shared by the releases of a film; and the mpv viewer script; and thumbnails for a film streamed over http(s), built while it plays and dropped when mpv closes (since 2026-11-26). Now (2026-11-08): about 1.7 MB read per thumbnail and 88 to 315 s per 4K film on the author's rig, from tens to hundreds of MB and 12 to 25 minutes or more before |
@@ -221,11 +221,16 @@ repeatability. The capture chain caps at about -6 dBFS in the hot sub run, and i
 "after" bass curve in A1 is computed, not recorded. The analysis code (sweep, sub, dialogue, reflection and rattle analysers) was written with an AI assistant, checked against simulated rooms and REW exports, and used on real recordings in the author's room (a predicted against recorded bass change agreed within about 1 to 2 dB); it has not been repeated by another person or a second tool. Where a number matters, check it against
 the raw REW exports in `data/rew/`.
 
+## The intro film
+
+[`intro/`](intro/) generates a 60 second original cinematic for this 5.1.2 rig, "A file becomes a room": HDR10 picture and sound from one score (shadow detail, object panning, a scope-to-16:9 opening, height channels, the Rec.709 gamut, HDR10 tone mapping, dynamics), a synthetic voice-over, and positions pre-rendered to speaker channels (not Dolby Atmos, no objects at playback). The video files are built from the source, not stored here. Checked by measuring the files; **not yet watched, listened to or played on the rig**. Details and stills: [docs/intro.md](docs/intro.md).
+
 ## Repository layout
 
 ```
 docs/        the documentation (start with architecture.md and runbook.md); docs/graphs/ holds every graph, docs/img the diagrams
 scripts/     preflight (read-only health report), collect-versions.sh, clone-all.sh, test-all.sh
+intro/       the source of the 60 second intro film (docs/intro.md)
 tools/       the figure and diagram generators: make-graphs.py, make-recording-graphs.py, make-verification-figures.py,
              make-architecture-diagram.py, make-system-overview.py, build-writeup-page.py
              (they read the other repositories: set-eq.py from linux-theater-dsp, REW data and analysers from Roomtone (formerly theater-measurement))

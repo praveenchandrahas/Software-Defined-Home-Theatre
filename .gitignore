@@ -5,6 +5,7 @@ recordings/
 *.mka
 *.mkv
 *.npy
+intro/models/
 # python
 __pycache__/
 *.pyc

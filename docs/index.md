@@ -41,6 +41,7 @@ work of others, and everything here stands on it:
 - **[Install](installation.md)** — the packaged `.deb` install, and what a from-source build needs.
 - **[Architecture](architecture.md)** and **[Technical write-up](technical-writeup.md)** — how the signal actually flows, end to end.
 - **[Spatial-Lab](spatial-lab.md)** — the 3D listening test bench: drag a sound around the room and hear it on the real speakers.
+- **[The intro film](intro.md)** — a 60 second cinematic for the 5.1.2 rig, generated from code (not yet played on the rig).
 - **[Status and what's verified](status.md)** — what's measured, what's still open.
 - **[Troubleshooting](troubleshooting.md)**.
 

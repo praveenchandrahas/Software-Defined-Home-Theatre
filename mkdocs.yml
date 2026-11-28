@@ -33,6 +33,7 @@ nav:
       - Architecture: architecture.md
       - Technical write-up: technical-writeup.md
       - Spatial-Lab (3D listening test bench): spatial-lab.md
+  - The intro film: intro.md
   - Tuning and calibration:
       - Tuning log: tuning-log.md
       - Speaker alignment: alignment.md
